@@ -8,15 +8,6 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
-  const [showCredentials, setShowCredentials] = useState(true);
-
-  const credentialsList = [
-    { role: 'Petugas Front Office', name: 'Petugas A', user: 'petugas.a', pass: 'frontoffice123', icon: '💼', badge: 'bg-emerald-100 text-emerald-800' },
-    { role: 'Petugas Tindak Lanjut', name: 'Petugas B', user: 'petugas.b', pass: 'tindaklanjut123', icon: '🛠️', badge: 'bg-blue-100 text-blue-800' },
-    { role: 'Kepala Seksi (Kasie)', name: 'Kasie Pembangunan', user: 'kasie.bang', pass: 'kasiebang123', icon: '📋', badge: 'bg-amber-100 text-amber-800' },
-    { role: 'Lurah / Sekretaris Lurah', name: 'Lurah Airmadidi Atas', user: 'lurah.airmadidi', pass: 'lurah2026', icon: '🏛️', badge: 'bg-purple-100 text-purple-800' },
-    { role: 'Administrator Sistem', name: 'Admin Utama', user: 'admin.sip', pass: 'admin2026', icon: '⚙️', badge: 'bg-slate-100 text-slate-800' }
-  ];
 
   const handleRoleChange = (r) => {
     setRole(r);
@@ -27,13 +18,6 @@ export const LoginPage = () => {
     else if (r === 'Kepala Seksi (Kasie)') setUsername('kasie.bang');
     else if (r === 'Lurah / Sekretaris Lurah') setUsername('lurah.airmadidi');
     else setUsername('admin.sip');
-  };
-
-  const handleAutofill = (cred) => {
-    setRole(cred.role);
-    setUsername(cred.user);
-    setPassword(cred.pass);
-    setErrorMsg(null);
   };
 
   const handleSubmit = (e) => {
@@ -196,58 +180,11 @@ export const LoginPage = () => {
             </div>
           </form>
 
-          {/* KARTU PANDUAN KATA SANDI RESMI PETUGAS */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div
-              onClick={() => setShowCredentials(!showCredentials)}
-              className="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between cursor-pointer hover:bg-slate-100 transition"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-sm">🔑</span>
-                <span className="text-xs font-bold text-slate-800">Daftar Akun & Kata Sandi Khusus Petugas</span>
-              </div>
-              <span className="text-xs text-slate-500">{showCredentials ? '▲ Tutup' : '▼ Lihat Sandi'}</span>
-            </div>
-
-            {showCredentials && (
-              <div className="p-3 space-y-2 text-xs divide-y divide-slate-100">
-                {credentialsList.map((c) => (
-                  <div key={c.user} className="pt-2 first:pt-0 flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-1.5 font-semibold text-slate-800">
-                        <span>{c.icon}</span>
-                        <span>{c.name}</span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-medium ${c.badge}`}>{c.role}</span>
-                      </div>
-                      <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-                        User: <span className="text-slate-800 font-bold">{c.user}</span> | Sandi: <span className="bg-slate-100 px-1 py-0.5 rounded text-rose-700 font-bold tracking-wide">{c.pass}</span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleAutofill(c)}
-                      className="px-2.5 py-1 text-[11px] font-semibold rounded-md bg-[#0c4652]/10 text-[#0c4652] hover:bg-[#0c4652] hover:text-white transition"
-                    >
-                      Gunakan
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Citizen Link */}
           <div className="mt-8 text-center text-xs text-slate-600">
             Warga umum?{' '}
             <button
               onClick={() => setCurrentPage('citizen-form')}
-              className="text-[#0c4652] hover:text-[#083842] font-semibold underline underline-offset-2 transition"
-            >
-              Ajukan atau lacak pengaduan tanpa login
-            </button>
-          </div>
-        </div>
-      </div>
               className="text-[#0c4652] hover:text-[#083842] font-semibold underline underline-offset-2 transition"
             >
               Ajukan atau lacak pengaduan tanpa login
