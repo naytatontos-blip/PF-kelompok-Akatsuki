@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { initialComplaints, initialUsers, initialAuditLogs, initialConfig } from '../data/mockData';
+import { initialComplaints, initialUsers, initialAuditLogs, initialConfig, categoriesList as initialCategories, sectionsList as initialSections } from '../data/mockData';
 
 const AppContext = createContext(null);
 
@@ -8,6 +8,24 @@ export const AppProvider = ({ children }) => {
   const [complaints, setComplaints] = useState(() => {
     const saved = localStorage.getItem('sip_complaints');
     return saved ? JSON.parse(saved) : initialComplaints;
+  });
+
+  const [categoriesList, setCategoriesList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sip_categories');
+      return saved ? JSON.parse(saved) : initialCategories;
+    } catch (e) {
+      return initialCategories;
+    }
+  });
+
+  const [sectionsList, setSectionsList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sip_sections');
+      return saved ? JSON.parse(saved) : initialSections;
+    } catch (e) {
+      return initialSections;
+    }
   });
 
   const [users, setUsers] = useState(() => {
@@ -52,6 +70,62 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('sip_config', JSON.stringify(systemConfig));
   }, [systemConfig]);
+
+  useEffect(() => {
+    localStorage.setItem('sip_categories', JSON.stringify(categoriesList));
+  }, [categoriesList]);
+
+  useEffect(() => {
+    localStorage.setItem('sip_sections', JSON.stringify(sectionsList));
+  }, [sectionsList]);
+
+  const addCategory = (name) => {
+    const trimmed = name.trim();
+    if (!trimmed) return false;
+    if (categoriesList.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
+      showToast('Kategori tersebut sudah ada!', 'error');
+      return false;
+    }
+    setCategoriesList(prev => [...prev, trimmed]);
+    addAuditLog(`Menambahkan master kategori: ${trimmed}`);
+    showToast(`Kategori "${trimmed}" berhasil ditambahkan.`);
+    return true;
+  };
+
+  const deleteCategory = (name) => {
+    if (categoriesList.length <= 1) {
+      showToast('Minimal harus ada 1 kategori aktif!', 'error');
+      return false;
+    }
+    setCategoriesList(prev => prev.filter(c => c !== name));
+    addAuditLog(`Menghapus master kategori: ${name}`);
+    showToast(`Kategori "${name}" berhasil dihapus.`);
+    return true;
+  };
+
+  const addSection = (name) => {
+    const trimmed = name.trim();
+    if (!trimmed) return false;
+    if (sectionsList.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
+      showToast('Seksi tersebut sudah ada!', 'error');
+      return false;
+    }
+    setSectionsList(prev => [...prev, trimmed]);
+    addAuditLog(`Menambahkan master seksi: ${trimmed}`);
+    showToast(`Seksi "${trimmed}" berhasil ditambahkan.`);
+    return true;
+  };
+
+  const deleteSection = (name) => {
+    if (sectionsList.length <= 1) {
+      showToast('Minimal harus ada 1 seksi!', 'error');
+      return false;
+    }
+    setSectionsList(prev => prev.filter(s => s !== name));
+    addAuditLog(`Menghapus master seksi: ${name}`);
+    showToast(`Seksi "${name}" berhasil dihapus.`);
+    return true;
+  };
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -384,6 +458,12 @@ export const AppProvider = ({ children }) => {
       value={{
         complaints,
         users,
+        categoriesList,
+        sectionsList,
+        addCategory,
+        deleteCategory,
+        addSection,
+        deleteSection,
         auditLogs,
         systemConfig,
         currentPage,

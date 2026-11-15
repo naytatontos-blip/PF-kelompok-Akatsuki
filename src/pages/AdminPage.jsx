@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Sidebar } from '../components/Sidebar';
-import { categoriesList, sectionsList } from '../data/mockData';
 
 export const AdminPage = () => {
   const {
     users,
+    categoriesList,
+    sectionsList,
+    addCategory,
+    deleteCategory,
+    addSection,
+    deleteSection,
     addUser,
     toggleUserStatus,
     auditLogs,
@@ -28,6 +33,26 @@ export const AdminPage = () => {
   });
 
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddCatModal, setShowAddCatModal] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [showAddSecModal, setShowAddSecModal] = useState(false);
+  const [newSecName, setNewSecName] = useState('');
+
+  const handleCreateCategory = (e) => {
+    e.preventDefault();
+    if (addCategory(newCatName)) {
+      setNewCatName('');
+      setShowAddCatModal(false);
+    }
+  };
+
+  const handleCreateSection = (e) => {
+    e.preventDefault();
+    if (addSection(newSecName)) {
+      setNewSecName('');
+      setShowAddSecModal(false);
+    }
+  };
   const [newUser, setNewUser] = useState({
     nama: '',
     username: '',
@@ -179,30 +204,94 @@ export const AdminPage = () => {
                   Master Kategori & Seksi
                 </h1>
                 <p className="text-sm text-slate-500 mt-1">
-                  Pengaturan klasifikasi kategori pengaduan dan data seksi pelaksana teknis kelurahan.
+                  Pengaturan klasifikasi kategori pengaduan dan data seksi pelaksana teknis kelurahan yang dapat ditambahkan secara dinamis.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* KARTU KATEGORI */}
                 <div className="bg-white rounded-2xl p-6 border border-[#e4e2da] shadow-sm space-y-4">
-                  <h3 className="text-lg font-bold text-slate-900">Kategori Bidang Pelayanan</h3>
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">Kategori Bidang Pelayanan</h3>
+                      <p className="text-xs text-slate-500">Total: {categoriesList.length} kategori aktif</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddCatModal(true)}
+                      className="py-2 px-3.5 rounded-lg bg-[#0c4652] hover:bg-[#083842] text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm transition"
+                    >
+                      <span>+</span>
+                      <span>Tambah Kategori</span>
+                    </button>
+                  </div>
+
                   <div className="space-y-2">
                     {categoriesList.map((cat, idx) => (
-                      <div key={cat} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-                        <span className="font-bold text-slate-800">{idx + 1}. {cat}</span>
-                        <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold text-[10px]">Aktif</span>
+                      <div key={cat} className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 text-xs transition">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-[#0c4652]/10 text-[#0c4652] flex items-center justify-center font-bold text-[10px]">{idx + 1}</span>
+                          <span className="font-semibold text-slate-800">{cat}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">Aktif</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Hapus kategori "${cat}"?`)) {
+                                deleteCategory(cat);
+                              }
+                            }}
+                            className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600 transition"
+                            title="Hapus Kategori"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
+                {/* KARTU SEKSI */}
                 <div className="bg-white rounded-2xl p-6 border border-[#e4e2da] shadow-sm space-y-4">
-                  <h3 className="text-lg font-bold text-slate-900">Seksi Pelaksana Teknis</h3>
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div>
+                      <h3 className="text-base font-bold text-slate-900">Seksi Pelaksana Teknis</h3>
+                      <p className="text-xs text-slate-500">Total: {sectionsList.length} seksi teknis</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddSecModal(true)}
+                      className="py-2 px-3.5 rounded-lg bg-[#b45309] hover:bg-[#92400e] text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm transition"
+                    >
+                      <span>+</span>
+                      <span>Tambah Seksi</span>
+                    </button>
+                  </div>
+
                   <div className="space-y-2">
                     {sectionsList.map((sec, idx) => (
-                      <div key={sec} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-                        <span className="font-bold text-slate-800">{idx + 1}. {sec}</span>
-                        <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-semibold text-[10px]">Internal</span>
+                      <div key={sec} className="flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 text-xs transition">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-800 flex items-center justify-center font-bold text-[10px]">{idx + 1}</span>
+                          <span className="font-semibold text-slate-800">{sec}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">Internal</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Hapus seksi "${sec}"?`)) {
+                                deleteSection(sec);
+                              }
+                            }}
+                            className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600 transition"
+                            title="Hapus Seksi"
+                          >
+                            🗑️
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -416,6 +505,71 @@ export const AdminPage = () => {
                 >
                   Simpan Pengguna
                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Modal Tambah Kategori */}
+      {showAddCatModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 animate-fadeIn">
+            <div className="flex items-center justify-between mb-4 border-b pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">📂</span>
+                <h3 className="text-base font-bold text-slate-900">Tambah Kategori Pengaduan Baru</h3>
+              </div>
+              <button onClick={() => setShowAddCatModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <form onSubmit={handleCreateCategory} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Nama Kategori Bidang Pelayanan <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  required
+                  value={newCatName}
+                  onChange={(e) => setNewCatName(e.target.value)}
+                  placeholder="Contoh: Penerangan Jalan Umum"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-[#0c4652] outline-none"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">Kategori baru akan langsung aktif dan muncul pada form petugas & warga.</p>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setShowAddCatModal(false)} className="px-4 py-2 border rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Batal</button>
+                <button type="submit" className="px-4 py-2 bg-[#0c4652] hover:bg-[#083842] text-white rounded-lg text-xs font-semibold shadow">Simpan Kategori</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Tambah Seksi */}
+      {showAddSecModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 animate-fadeIn">
+            <div className="flex items-center justify-between mb-4 border-b pb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🏢</span>
+                <h3 className="text-base font-bold text-slate-900">Tambah Seksi Pelaksana Baru</h3>
+              </div>
+              <button onClick={() => setShowAddSecModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <form onSubmit={handleCreateSection} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">Nama Seksi Pelaksana Teknis <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  required
+                  value={newSecName}
+                  onChange={(e) => setNewSecName(e.target.value)}
+                  placeholder="Contoh: Seksi Pemberdayaan Masyarakat"
+                  className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-[#b45309] outline-none"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">Seksi baru akan langsung aktif dan muncul pada pilihan disposisi.</p>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setShowAddSecModal(false)} className="px-4 py-2 border rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Batal</button>
+                <button type="submit" className="px-4 py-2 bg-[#b45309] hover:bg-[#92400e] text-white rounded-lg text-xs font-semibold shadow">Simpan Seksi</button>
               </div>
             </form>
           </div>

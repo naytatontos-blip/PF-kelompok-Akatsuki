@@ -233,8 +233,8 @@
       { id: 4, aktivitas: "Eskalasi prioritas ADU-0002", user: "kasie.bang", waktu: "09.45" }
     ];
 
-    const categoriesList = ["Infrastruktur & Lingkungan", "Kebersihan", "Layanan Adminduk", "Keamanan"];
-    const sectionsList = ["Seksi Pembangunan", "Seksi Ketenteraman & Ketertiban", "Seksi Kesejahteraan Sosial", "Seksi Tata Kelola Pemerintahan"];
+    const defaultCategoriesList = ["Infrastruktur & Lingkungan", "Kebersihan", "Layanan Adminduk", "Keamanan"];
+    const defaultSectionsList = ["Seksi Pembangunan", "Seksi Ketenteraman & Ketertiban", "Seksi Kesejahteraan Sosial", "Seksi Tata Kelola Pemerintahan"];
 
     function StatusBadge({ status }) {
       switch (status) {
@@ -442,6 +442,36 @@
         alamatKantor: "Jl. Raya Airmadidi Atas No. 12, Minahasa Utara",
         hotline: "0812-4400-5511"
       });
+
+      const [categoriesList, setCategoriesList] = useState(() => {
+        try {
+          const saved = localStorage.getItem('sip_categories_v2');
+          return saved ? JSON.parse(saved) : defaultCategoriesList;
+        } catch (e) {
+          return defaultCategoriesList;
+        }
+      });
+
+      const [sectionsList, setSectionsList] = useState(() => {
+        try {
+          const saved = localStorage.getItem('sip_sections_v2');
+          return saved ? JSON.parse(saved) : defaultSectionsList;
+        } catch (e) {
+          return defaultSectionsList;
+        }
+      });
+
+      useEffect(() => {
+        try {
+          localStorage.setItem('sip_categories_v2', JSON.stringify(categoriesList));
+        } catch (e) {}
+      }, [categoriesList]);
+
+      useEffect(() => {
+        try {
+          localStorage.setItem('sip_sections_v2', JSON.stringify(sectionsList));
+        } catch (e) {}
+      }, [sectionsList]);
 
       const [view, setView] = useState('citizen-form');
       const [currentUser, setCurrentUser] = useState(null);
@@ -2140,6 +2170,336 @@
     function ScreenLeader() {
       const [periode, setPeriode] = useState('Okt 2026');
 
+      const handlePrintOfficialPDF = () => {
+        notify('Menyiapkan format dokumen resmi laporan pengaduan untuk cetak/PDF...');
+        
+        const today = new Date();
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        const tanggalFormat = today.toLocaleDateString('id-ID', options);
+
+        const total = complaints.length;
+        const inProgress = complaints.filter(c => ['Baru', 'Terverifikasi', 'Didisposisikan', 'Diproses'].includes(c.status)).length;
+        const done = complaints.filter(c => ['Selesai Penanganan', 'Selesai'].includes(c.status)).length;
+
+        const rowsHtml = complaints.map((c, i) => `
+          <tr style="border-bottom: 1px solid #cbd5e1; ${i % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
+            <td style="padding: 7px 6px; text-align: center; font-size: 8.5pt;">${i + 1}</td>
+            <td style="padding: 7px 6px; font-weight: bold; font-family: monospace; font-size: 8.5pt;">${c.shortId || c.id}</td>
+            <td style="padding: 7px 6px; font-size: 8.5pt;">${c.nama || '-'}</td>
+            <td style="padding: 7px 6px; font-size: 8pt; color: #334155;">${c.lokasi || '-'}</td>
+            <td style="padding: 7px 6px; font-size: 8pt;">${c.kategori || '-'}</td>
+            <td style="padding: 7px 6px; font-size: 8pt;">${c.tujuanDisposisi || '-'}</td>
+            <td style="padding: 7px 6px; text-align: center; font-size: 8pt; font-weight: 600;">
+              <span style="display: inline-block; padding: 2px 7px; border-radius: 9999px; ${c.status === 'Selesai Penanganan' || c.status === 'Selesai' ? 'background: #dcfce7; color: #166534;' : 'background: #fef3c7; color: #92400e;'}">
+                ${c.status}
+              </span>
+            </td>
+            <td style="padding: 7px 6px; text-align: center; font-size: 8pt; color: #475569;">${c.timerSla || '-'}</td>
+          </tr>
+        `).join('');
+
+        const printContent = `
+          <!DOCTYPE html>
+          <html lang="id">
+          <head>
+            <meta charset="UTF-8">
+            <title>Laporan_Rekapitulasi_Pengaduan_Kelurahan_Airmadidi_Atas</title>
+            <style>
+              @page {
+                size: A4 landscape;
+                margin: 12mm 10mm 15mm 10mm;
+              }
+              body {
+                font-family: Arial, Helvetica, sans-serif;
+                color: #0f172a;
+                margin: 0;
+                padding: 15px;
+                background: #ffffff;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              .action-bar {
+                position: sticky;
+                top: 0;
+                background: #0c4652;
+                color: #ffffff;
+                padding: 10px 18px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+              }
+              .action-bar button {
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-weight: bold;
+                font-size: 12px;
+                cursor: pointer;
+              }
+              .btn-print { background: #22c55e; color: #ffffff; }
+              .btn-close { background: #ef4444; color: #ffffff; margin-left: 8px; }
+              @media print {
+                .no-print { display: none !important; }
+                body { padding: 0 !important; }
+              }
+              .kop-wrapper {
+                border-bottom: 3px double #0f172a;
+                padding-bottom: 12px;
+                margin-bottom: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+              }
+              .kop-logo {
+                position: absolute;
+                left: 15px;
+                top: 4px;
+                width: 65px;
+                height: 65px;
+              }
+              .kop-text {
+                text-align: center;
+                line-height: 1.25;
+              }
+              .kop-text h4 { margin: 0; font-size: 11pt; letter-spacing: 1px; font-weight: bold; text-transform: uppercase; color: #334155; }
+              .kop-text h3 { margin: 2px 0; font-size: 13pt; letter-spacing: 1.5px; font-weight: bold; text-transform: uppercase; color: #1e293b; }
+              .kop-text h2 { margin: 2px 0; font-size: 16pt; letter-spacing: 2px; font-weight: 800; text-transform: uppercase; color: #0c4652; }
+              .kop-text p { margin: 3px 0 0; font-size: 8.5pt; color: #475569; }
+              .title-section {
+                text-align: center;
+                margin-bottom: 16px;
+              }
+              .title-section h3 {
+                margin: 0;
+                font-size: 12pt;
+                text-transform: uppercase;
+                font-weight: 800;
+                letter-spacing: 0.5px;
+                text-decoration: underline;
+              }
+              .title-section p {
+                margin: 3px 0 0;
+                font-size: 9pt;
+                color: #475569;
+              }
+              .summary-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 16px;
+                font-size: 8.5pt;
+              }
+              .summary-table th {
+                background-color: #f1f5f9;
+                border: 1px solid #cbd5e1;
+                padding: 6px;
+                text-align: center;
+              }
+              .summary-table td {
+                border: 1px solid #cbd5e1;
+                padding: 8px;
+                text-align: center;
+                font-weight: bold;
+                font-size: 11pt;
+              }
+              .data-table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 8.5pt;
+                margin-bottom: 24px;
+              }
+              .data-table th {
+                background-color: #0c4652 !important;
+                color: #ffffff !important;
+                border: 1px solid #082f37;
+                padding: 8px 6px;
+                text-align: left;
+                font-size: 8pt;
+                text-transform: uppercase;
+              }
+              .data-table td {
+                border: 1px solid #e2e8f0;
+              }
+              .signature-box {
+                display: flex;
+                justify-content: flex-end;
+                margin-top: 24px;
+                page-break-inside: avoid;
+              }
+              .sig-block {
+                width: 260px;
+                text-align: center;
+                font-size: 9.5pt;
+                line-height: 1.4;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="action-bar no-print">
+              <div>
+                <strong>🏛️ SIP-Publik: Format Cetak Laporan Resmi Pemerintah Kelurahan</strong>
+                <span style="font-size: 11px; opacity: 0.85; margin-left: 10px;">(Tampilan dokumen laporan siap cetak / simpan ke PDF)</span>
+              </div>
+              <div>
+                <button class="btn-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+                <button class="btn-close" onclick="window.close()">✕ Tutup</button>
+              </div>
+            </div>
+
+            <div class="kop-wrapper">
+              <div class="kop-logo">
+                <svg viewBox="0 0 100 100" width="65" height="65">
+                  <polygon points="50,5 95,30 95,75 50,98 5,75 5,30" fill="#0c4652" />
+                  <polygon points="50,12 87,34 87,71 50,90 13,71 13,34" fill="#ffffff" />
+                  <polygon points="50,18 80,38 80,67 50,83 20,67 20,38" fill="#b45309" />
+                  <text x="50" y="55" font-size="20" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">🏛️</text>
+                </svg>
+              </div>
+              <div class="kop-text">
+                <h4>PEMERINTAH KABUPATEN MINAHASA UTARA</h4>
+                <h3>KECAMATAN AIRMADIDI</h3>
+                <h2>KELURAHAN AIRMADIDI ATAS</h2>
+                <p>Jl. Raya Manado - Bitung, Kelurahan Airmadidi Atas, Kecamatan Airmadidi, Kode Pos 95371</p>
+                <p>Laman: <em>airmadidiatas.minut.go.id</em> | Layanan SIP-Publik: <em>0812-4400-5511</em></p>
+              </div>
+            </div>
+
+            <div class="title-section">
+              <h3>LAPORAN REKAPITULASI PENGADUAN & ASPIRASI MASYARAKAT</h3>
+              <p>Sistem Informasi Pelayanan Pengaduan Publik (SIP-Publik) Kelurahan Airmadidi Atas</p>
+              <p style="font-size: 8pt; color: #64748b; margin-top: 2px;">Tanggal Cetak: <strong>${tanggalFormat}</strong> &bull; Klasifikasi: Dokumen Rekapitulasi Eksekutif</p>
+            </div>
+
+            <table class="summary-table">
+              <tr>
+                <th>Total Pengaduan Warga</th>
+                <th>Dalam Proses Penanganan</th>
+                <th>Selesai Dituntaskan</th>
+                <th>Indeks Kepuasan Layanan (IKM)</th>
+              </tr>
+              <tr>
+                <td style="color: #0c4652;">${total} Berkas</td>
+                <td style="color: #c2410c;">${inProgress} Berkas</td>
+                <td style="color: #15803d;">${done} Berkas</td>
+                <td style="color: #0f172a;">4,3 ★ (Sangat Memuaskan)</td>
+              </tr>
+            </table>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 3%; text-align: center;">No</th>
+                  <th style="width: 12%;">No. Tiket</th>
+                  <th style="width: 15%;">Nama Pengadu</th>
+                  <th style="width: 20%;">Lokasi / Lingkungan</th>
+                  <th style="width: 16%;">Kategori Bidang</th>
+                  <th style="width: 16%;">Seksi Disposisi</th>
+                  <th style="width: 10%; text-align: center;">Status</th>
+                  <th style="width: 8%; text-align: center;">SLA</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+
+            <div class="signature-box">
+              <div class="sig-block">
+                <p style="margin: 0;">Airmadidi Atas, ${tanggalFormat}</p>
+                <p style="margin: 3px 0 0; font-weight: bold;">LURAH AIRMADIDI ATAS,</p>
+                <div style="height: 60px; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #94a3b8; font-style: italic;">
+                  [ Tanda Tangan & Cap Jabatan ]
+                </div>
+                <p style="margin: 0; font-weight: bold; text-decoration: underline;">MARTSEN R. TONTOS, S.STP</p>
+                <p style="margin: 2px 0 0; font-size: 8.5pt; color: #475569;">NIP. 19850314 200801 1 003</p>
+              </div>
+            </div>
+
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                }, 350);
+              };
+            </script>
+          </body>
+          </html>
+        `;
+
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.open();
+          printWindow.document.write(printContent);
+          printWindow.document.close();
+        } else {
+          alert('Popup terblokir oleh peramban. Mohon izinkan popup untuk mencetak laporan resmi.');
+        }
+      };
+
+      const handleExportExcel = () => {
+        notify('Menyiapkan dan mengunduh berkas Spreadsheet Excel (.csv)...');
+
+        const headers = [
+          "No",
+          "Nomor Tiket",
+          "Tanggal Laporan",
+          "Nama Pengadu",
+          "Kontak WhatsApp",
+          "Lokasi Kejadian",
+          "Kategori Pengaduan",
+          "Rincian Keluhan / Masalah",
+          "Seksi Penanggung Jawab",
+          "Status Pengaduan",
+          "Prioritas Kasus",
+          "Timer SLA",
+          "Rating Kepuasan Warga",
+          "Catatan Penyelesaian Lapangan"
+        ];
+
+        const escapeCell = (val) => {
+          if (val === null || val === undefined) return '""';
+          const text = String(val).replace(/"/g, '""');
+          return `"${text}"`;
+        };
+
+        const csvRows = [headers.map(escapeCell).join(";")];
+
+        complaints.forEach((c, idx) => {
+          csvRows.push([
+            idx + 1,
+            c.shortId || c.id,
+            c.createdAt || "2026-10-15",
+            c.nama || "-",
+            c.kontak || "-",
+            c.lokasi || "-",
+            c.kategori || "-",
+            c.detail || "-",
+            c.tujuanDisposisi || "-",
+            c.status || "-",
+            c.prioritas || "Sedang",
+            c.timerSla || "-",
+            c.rating ? `${c.rating} Bintang` : "Belum Dinilai",
+            c.tanggapanResmi || c.instruksiKhusus || "-"
+          ].map(escapeCell).join(";"));
+        });
+
+        const csvContent = "\uFEFF" + csvRows.join("\r\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const dateStr = new Date().toISOString().split("T")[0];
+        a.href = url;
+        a.download = `Laporan_Rekapitulasi_Pengaduan_Kelurahan_Airmadidi_Atas_${dateStr}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        notify('Berkas Excel (.csv) berhasil diunduh ke komputer Anda!');
+      };
+
       return (
         <div className="min-h-screen bg-[#f7f5ee] flex">
           <SidebarComponent
@@ -2161,10 +2521,10 @@
                       <p className="text-sm text-slate-500 mt-1">Ringkasan eksekutif pengaduan masyarakat Kelurahan Airmadidi Atas.</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <button onClick={() => { notify('Mengekspor laporan PDF...'); window.print(); }} className="py-2.5 px-5 rounded-lg bg-[#0c4652] hover:bg-[#083842] text-white font-semibold text-sm shadow">
+                      <button onClick={handlePrintOfficialPDF} className="py-2.5 px-5 rounded-lg bg-[#0c4652] hover:bg-[#083842] text-white font-semibold text-sm shadow">
                         Ekspor PDF
                       </button>
-                      <button onClick={() => notify('Mengekspor berkas CSV/Excel...')} className="py-2.5 px-5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm">
+                      <button onClick={handleExportExcel} className="py-2.5 px-5 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm">
                         Ekspor Excel
                       </button>
                     </div>
@@ -2300,16 +2660,16 @@
                     <div className="bg-white p-6 rounded-2xl border border-[#e4e2da] shadow-sm space-y-3">
                       <h3 className="font-bold text-slate-900">Format PDF Eksekutif</h3>
                       <p className="text-xs text-slate-500">Laporan siap cetak ringkasan bulanan dengan grafik dan ulasan warga.</p>
-                      <button onClick={() => window.print()} className="w-full py-2.5 rounded-lg bg-[#0c4652] text-white text-xs font-semibold">
-                        📄 Cetak / Download PDF
+                      <button onClick={handlePrintOfficialPDF} className="w-full py-2.5 rounded-lg bg-[#0c4652] hover:bg-[#083842] text-white text-xs font-semibold shadow transition">
+                        📄 Cetak / Download PDF Resmi
                       </button>
                     </div>
 
                     <div className="bg-white p-6 rounded-2xl border border-[#e4e2da] shadow-sm space-y-3">
                       <h3 className="font-bold text-slate-900">Format Spreadsheet Excel / CSV</h3>
                       <p className="text-xs text-slate-500">Seluruh data mentah pengaduan untuk pengolahan di Microsoft Excel.</p>
-                      <button onClick={() => notify('Spreadsheet berhasil diunduh')} className="w-full py-2.5 rounded-lg bg-[#b45309] text-white text-xs font-semibold">
-                        📊 Download File CSV
+                      <button onClick={handleExportExcel} className="w-full py-2.5 rounded-lg bg-[#b45309] hover:bg-[#92400e] text-white text-xs font-semibold shadow transition">
+                        📊 Download File CSV / Excel
                       </button>
                     </div>
                   </div>
@@ -2328,6 +2688,62 @@
       const [conf, setConf] = useState(config);
       const [showAddModal, setShowAddModal] = useState(false);
       const [newUser, setNewUser] = useState({ nama: '', username: '', role: 'Front Office', roleKey: 'front_office' });
+
+      // State Modal Tambah Kategori & Seksi
+      const [showAddCatModal, setShowAddCatModal] = useState(false);
+      const [newCatName, setNewCatName] = useState('');
+      const [showAddSecModal, setShowAddSecModal] = useState(false);
+      const [newSecName, setNewSecName] = useState('');
+
+      const handleAddCategory = (e) => {
+        e.preventDefault();
+        const trimmed = newCatName.trim();
+        if (!trimmed) return;
+        if (categoriesList.some(c => c.toLowerCase() === trimmed.toLowerCase())) {
+          notify('Kategori tersebut sudah terdaftar!');
+          return;
+        }
+        setCategoriesList(prev => [...prev, trimmed]);
+        setNewCatName('');
+        setShowAddCatModal(false);
+        notify(`Kategori "${trimmed}" berhasil ditambahkan.`);
+      };
+
+      const handleDeleteCategory = (cat) => {
+        if (categoriesList.length <= 1) {
+          notify('Minimal harus ada 1 kategori aktif!');
+          return;
+        }
+        if (confirm(`Hapus kategori "${cat}" dari daftar master?`)) {
+          setCategoriesList(prev => prev.filter(c => c !== cat));
+          notify(`Kategori "${cat}" berhasil dihapus.`);
+        }
+      };
+
+      const handleAddSection = (e) => {
+        e.preventDefault();
+        const trimmed = newSecName.trim();
+        if (!trimmed) return;
+        if (sectionsList.some(s => s.toLowerCase() === trimmed.toLowerCase())) {
+          notify('Seksi tersebut sudah terdaftar!');
+          return;
+        }
+        setSectionsList(prev => [...prev, trimmed]);
+        setNewSecName('');
+        setShowAddSecModal(false);
+        notify(`Seksi "${trimmed}" berhasil ditambahkan.`);
+      };
+
+      const handleDeleteSection = (sec) => {
+        if (sectionsList.length <= 1) {
+          notify('Minimal harus ada 1 seksi pelaksana!');
+          return;
+        }
+        if (confirm(`Hapus seksi "${sec}" dari daftar master?`)) {
+          setSectionsList(prev => prev.filter(s => s !== sec));
+          notify(`Seksi "${sec}" berhasil dihapus.`);
+        }
+      };
 
       const handleToggleStatus = (id) => {
         setUsers(prev => prev.map(u => u.id === id ? { ...u, status: u.status === 'Aktif' ? 'Nonaktif' : 'Aktif' } : u));
@@ -2407,19 +2823,92 @@
               {/* HALAMAN 2: MASTER KATEGORI */}
               {activeTab === 'Master Kategori' && (
                 <div className="space-y-6">
-                  <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Master Kategori & Seksi</h1>
-                    <p className="text-sm text-slate-500 mt-1">Daftar klasifikasi bidang pelayanan dan seksi kelurahan.</p>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Master Kategori & Seksi</h1>
+                      <p className="text-sm text-slate-500 mt-1">Daftar klasifikasi bidang pelayanan dan seksi pelaksana kelurahan yang dapat ditambah secara dinamis.</p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white p-6 rounded-2xl border border-[#e4e2da] shadow-sm space-y-3">
-                      <h3 className="font-bold text-slate-900 text-sm">Kategori Pengaduan</h3>
-                      {categoriesList.map(c => <div key={c} className="p-3 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700">• {c}</div>)}
+                    {/* KARTU 1: KATEGORI PENGADUAN */}
+                    <div className="bg-white p-6 rounded-2xl border border-[#e4e2da] shadow-sm space-y-4">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-base">Kategori Pengaduan</h3>
+                          <p className="text-xs text-slate-500">Total: {categoriesList.length} kategori aktif</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddCatModal(true)}
+                          className="py-2 px-3.5 rounded-lg bg-[#0c4652] hover:bg-[#083842] text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm transition"
+                        >
+                          <span>+</span>
+                          <span>Tambah Kategori</span>
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {categoriesList.map((c, idx) => (
+                          <div key={c} className="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 flex items-center justify-between text-xs transition">
+                            <div className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-[#0c4652]/10 text-[#0c4652] flex items-center justify-center font-bold text-[10px]">{idx + 1}</span>
+                              <span className="font-semibold text-slate-800">{c}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">Aktif</span>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCategory(c)}
+                                className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600 transition"
+                                title="Hapus Kategori"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl border border-[#e4e2da] shadow-sm space-y-3">
-                      <h3 className="font-bold text-slate-900 text-sm">Seksi Pelaksana</h3>
-                      {sectionsList.map(s => <div key={s} className="p-3 bg-slate-50 rounded-lg text-xs font-semibold text-slate-700">• {s}</div>)}
+
+                    {/* KARTU 2: SEKSI PELAKSANA */}
+                    <div className="bg-white p-6 rounded-2xl border border-[#e4e2da] shadow-sm space-y-4">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div>
+                          <h3 className="font-bold text-slate-900 text-base">Seksi Pelaksana</h3>
+                          <p className="text-xs text-slate-500">Total: {sectionsList.length} seksi teknis</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddSecModal(true)}
+                          className="py-2 px-3.5 rounded-lg bg-[#b45309] hover:bg-[#92400e] text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm transition"
+                        >
+                          <span>+</span>
+                          <span>Tambah Seksi</span>
+                        </button>
+                      </div>
+
+                      <div className="space-y-2">
+                        {sectionsList.map((s, idx) => (
+                          <div key={s} className="p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 flex items-center justify-between text-xs transition">
+                            <div className="flex items-center gap-2">
+                              <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-800 flex items-center justify-center font-bold text-[10px]">{idx + 1}</span>
+                              <span className="font-semibold text-slate-800">{s}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px]">Internal</span>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteSection(s)}
+                                className="p-1 hover:bg-rose-50 rounded text-slate-400 hover:text-rose-600 transition"
+                                title="Hapus Seksi"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2524,6 +3013,72 @@
                   <div className="flex justify-end gap-2 pt-2">
                     <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 border rounded-lg text-xs font-semibold text-slate-700">Batal</button>
                     <button type="submit" className="px-4 py-2 bg-[#b45309] text-white rounded-lg text-xs font-semibold">Simpan Pengguna</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Tambah Kategori */}
+          {showAddCatModal && (
+            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200">
+                <div className="flex items-center justify-between mb-4 border-b pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">📂</span>
+                    <h3 className="text-base font-bold text-slate-900">Tambah Kategori Pengaduan Baru</h3>
+                  </div>
+                  <button onClick={() => setShowAddCatModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+                </div>
+                <form onSubmit={handleAddCategory} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Nama Kategori Bidang Pelayanan <span className="text-rose-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      value={newCatName}
+                      onChange={(e) => setNewCatName(e.target.value)}
+                      placeholder="Contoh: Penerangan Jalan Umum"
+                      className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-[#0c4652] outline-none"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">Kategori baru akan langsung aktif dan muncul pada pilihan pengaduan.</p>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button type="button" onClick={() => setShowAddCatModal(false)} className="px-4 py-2 border rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Batal</button>
+                    <button type="submit" className="px-4 py-2 bg-[#0c4652] hover:bg-[#083842] text-white rounded-lg text-xs font-semibold shadow">Simpan Kategori</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Tambah Seksi */}
+          {showAddSecModal && (
+            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200">
+                <div className="flex items-center justify-between mb-4 border-b pb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🏢</span>
+                    <h3 className="text-base font-bold text-slate-900">Tambah Seksi Pelaksana Baru</h3>
+                  </div>
+                  <button onClick={() => setShowAddSecModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+                </div>
+                <form onSubmit={handleAddSection} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">Nama Seksi Pelaksana Teknis <span className="text-rose-500">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      value={newSecName}
+                      onChange={(e) => setNewSecName(e.target.value)}
+                      placeholder="Contoh: Seksi Pemberdayaan Masyarakat"
+                      className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-[#b45309] outline-none"
+                    />
+                    <p className="text-[11px] text-slate-500 mt-1">Seksi baru akan langsung aktif dan muncul pada pilihan disposisi.</p>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button type="button" onClick={() => setShowAddSecModal(false)} className="px-4 py-2 border rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-50">Batal</button>
+                    <button type="submit" className="px-4 py-2 bg-[#b45309] hover:bg-[#92400e] text-white rounded-lg text-xs font-semibold shadow">Simpan Seksi</button>
                   </div>
                 </form>
               </div>
