@@ -2417,14 +2417,6 @@
                 <p style="margin: 2px 0 0; font-size: 8.5pt; color: #475569;">NIP. 19850314 200801 1 003</p>
               </div>
             </div>
-
-            <script>
-              window.onload = function() {
-                setTimeout(function() {
-                  window.print();
-                }, 350);
-              };
-            </script>
           </body>
           </html>
         `;
@@ -2434,6 +2426,12 @@
           printWindow.document.open();
           printWindow.document.write(printContent);
           printWindow.document.close();
+          printWindow.focus();
+          setTimeout(() => {
+            try {
+              printWindow.print();
+            } catch (err) {}
+          }, 500);
         } else {
           alert('Popup terblokir oleh peramban. Mohon izinkan popup untuk mencetak laporan resmi.');
         }

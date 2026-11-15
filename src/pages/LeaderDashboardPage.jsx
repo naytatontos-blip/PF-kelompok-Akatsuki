@@ -272,13 +272,6 @@ export const LeaderDashboardPage = () => {
           </div>
         </div>
 
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              window.print();
-            }, 350);
-          };
-        </script>
       </body>
       </html>
     `;
@@ -288,6 +281,12 @@ export const LeaderDashboardPage = () => {
       printWindow.document.open();
       printWindow.document.write(printContent);
       printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        try {
+          printWindow.print();
+        } catch (err) {}
+      }, 500);
     } else {
       alert('Popup terblokir oleh peramban. Mohon izinkan popup untuk mencetak laporan resmi.');
     }
