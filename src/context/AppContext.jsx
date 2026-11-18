@@ -342,18 +342,19 @@ export const AppProvider = ({ children }) => {
   };
 
   // Section Head (Kasie): Setujui Closure
-  const approveClosure = (shortIdOrId) => {
+  const approveClosure = (shortIdOrId, completionPhoto = null) => {
     setComplaints(prev => prev.map(c => {
       if (c.shortId === shortIdOrId || c.id === shortIdOrId) {
         return {
           ...c,
           status: 'Selesai',
-          statusTimeline: 'Selesai'
+          statusTimeline: 'Selesai',
+          ...(completionPhoto ? { buktiFotoUrl: completionPhoto } : {})
         };
       }
       return c;
     }));
-    addAuditLog(`Approval closure ${shortIdOrId} & penutupan resmi`, currentUser?.username || 'kasie.bang');
+    addAuditLog(`Approval closure ${shortIdOrId} & penutupan resmi${completionPhoto ? ' dengan bukti foto selesai' : ''}`, currentUser?.username || 'kasie.bang');
     showToast(`Aduan ${shortIdOrId} telah disetujui ditutup resmi (Closure Selesai). Notifikasi WA penutupan terkirim.`);
   };
 

@@ -165,7 +165,10 @@ Pesan ini dikirimkan secara otomatis oleh Sistem Informasi Pengaduan Pelayanan P
 export const generateWhatsAppResolvedMessage = (complaint) => {
   const shortId = complaint.shortId || complaint.id;
   const baseUrl = typeof window !== 'undefined' && window.location ? window.location.origin : 'http://localhost:3000';
-  const buktiFotoUrl = complaint.buktiFotoUrl || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80';
+  const isDataUrl = complaint.buktiFotoUrl && complaint.buktiFotoUrl.startsWith('data:');
+  const buktiFotoUrl = isDataUrl
+    ? `[Foto Bukti Selesai Terlampir - Disahkan Kasie]\n🔗 Akses Foto: ${baseUrl}/#/track?id=${shortId}`
+    : (complaint.buktiFotoUrl || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80');
   
   return (
 `*SIP-PUBLIK KELURAHAN AIRMADIDI ATAS*
@@ -173,7 +176,7 @@ export const generateWhatsAppResolvedMessage = (complaint) => {
 
 Yth. Bpk/Ibu *${complaint.nama || 'Warga'}*,
 
-Kabar baik! Pengaduan Anda dengan nomor tiket *${shortId}* telah *SELESAI DITANGANI* oleh tim petugas lapangan Kelurahan Airmadidi Atas.
+Kabar baik! Pengaduan Anda dengan nomor tiket *${shortId}* telah *SELESAI DITANGANI* oleh tim petugas lapangan dan disetujui resmi oleh Kepala Seksi Kelurahan Airmadidi Atas.
 
 📋 *Nomor Tiket:* ${shortId} (${complaint.id})
 📍 *Lokasi:* ${complaint.lokasi || '-'}
@@ -181,9 +184,8 @@ Kabar baik! Pengaduan Anda dengan nomor tiket *${shortId}* telah *SELESAI DITANG
 📝 *Catatan Pengerjaan:* ${complaint.catatanProgres || 'Pekerjaan perbaikan fisik di lapangan telah selesai 100%.'}
 💬 *Tanggapan Resmi:* ${complaint.tanggapanResmi || 'Terima kasih atas laporan Anda. Saluran/fasilitas telah kembali normal.'}
 
-📸 *DOKUMENTASI BUKTI FOTO PENYELESAIAN:*
-Berikut bukti foto hasil pengerjaan di lapangan:
-🔗 ${buktiFotoUrl}
+📸 *DOKUMENTASI BUKTI FOTO PENYELESAIAN (TANDA SELESAI):*
+${buktiFotoUrl}
 
 Mohon kesediaan Bpk/Ibu untuk memberikan penilaian kepuasan masyarakat (bintang 1 - 5) dan ulasan pada sistem kami:
 ⭐ *Beri Rating & Ulasan:*

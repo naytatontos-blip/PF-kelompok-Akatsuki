@@ -1,6 +1,11 @@
 import http from 'http';
 import { URL } from 'url';
 import { db } from './database.js';
+import { 
+  validateCitizenName, 
+  validateLocationAirmadidiAtas, 
+  validateEvidencePhoto 
+} from './validator.js';
 
 const PORT = process.env.PORT || 5000;
 
@@ -115,17 +120,37 @@ const server = http.createServer(async (req, res) => {
     // 2. Submit new complaint (Citizen)
     if (pathname === '/api/complaints' && method === 'POST') {
       const body = await parseBody(req);
-      if (!body.nama || !body.kontak || !body.detail) {
-        return sendJson(res, 400, { success: false, message: 'Nama, Kontak, dan Detail aduan wajib diisi.' });
+
+      // 1. Validasi Nama Pelapor (Sesuai KTP)
+      const nameCheck = validateCitizenName(body.nama);
+      if (!nameCheck.isValid) {
+        return sendJson(res, 400, { success: false, message: nameCheck.message });
       }
 
-      // Validasi ketat nomor telepon resmi Indonesia 12 digit
+      // 2. Validasi Nomor Telepon
       const rawDigits = String(body.kontak || '').replace(/\D/g, '').replace(/^62/, '0');
       if (rawDigits.length !== 12 || !rawDigits.startsWith('08')) {
         return sendJson(res, 400, {
           success: false,
           message: `Nomor telepon/WhatsApp harus nomor resmi Indonesia 12 digit diawali 08 (contoh: 0812-3456-7890). Saat ini: ${rawDigits.length} digit.`
         });
+      }
+
+      // 3. Validasi Lokasi Kejadian (Khusus Kelurahan Airmadidi Atas)
+      const locCheck = validateLocationAirmadidiAtas(body.lokasi);
+      if (!locCheck.isValid) {
+        return sendJson(res, 400, { success: false, message: locCheck.message });
+      }
+
+      // 4. Validasi Wajib Unggah Foto Bukti
+      const photoCheck = validateEvidencePhoto(body.fotoUrl || (body.buktiFoto && body.buktiFoto[0]));
+      if (!photoCheck.isValid) {
+        return sendJson(res, 400, { success: false, message: photoCheck.message });
+      }
+
+      // 5. Validasi Detail Aduan
+      if (!body.detail || !body.detail.trim()) {
+        return sendJson(res, 400, { success: false, message: 'Detail aduan wajib diisi.' });
       }
 
       const newComplaint = db.createComplaint(body);
@@ -294,23 +319,29 @@ const server = http.createServer(async (req, res) => {
         const body = await parseBody(req);
         const existing = db.getComplaintById(ticketId);
         const waNotifs = existing?.waNotifications || [];
+        const finalBuktiFoto = body.buktiFotoUrl || existing?.buktiFotoUrl;
         
         waNotifs.push({
           type: 'closure',
           phone: existing?.kontak,
           timestamp: new Date().toISOString().replace('T', ' ').substring(0, 16),
           status: 'Terkirim ke WhatsApp Warga',
-          buktiFotoUrl: existing?.buktiFotoUrl,
+          buktiFotoUrl: finalBuktiFoto,
           summary: `Pengaduan ${ticketId} telah disetujui ditutup resmi oleh Kepala Seksi.`
         });
 
-        const updated = db.updateComplaint(ticketId, {
+        const updateData = {
           status: 'Selesai',
           statusTimeline: 'Selesai',
           waNotifications: waNotifs
-        });
+        };
+        if (finalBuktiFoto) {
+          updateData.buktiFotoUrl = finalBuktiFoto;
+        }
+
+        const updated = db.updateComplaint(ticketId, updateData);
         if (!updated) return sendJson(res, 404, { success: false, message: 'Tiket tidak ditemukan.' });
-        db.createAuditLog(`Approval closure & notifikasi WA penutupan ${ticketId}`, body.user || 'kasie.bang');
+        db.createAuditLog(`Approval closure & notifikasi WA penutupan ${ticketId}${body.buktiFotoUrl ? ' dengan bukti foto' : ''}`, body.user || 'kasie.bang');
         return sendJson(res, 200, { 
           success: true, 
           message: 'Aduan berhasil disetujui untuk penutupan resmi (Closure Selesai). Notifikasi WA penutupan terkirim.', 

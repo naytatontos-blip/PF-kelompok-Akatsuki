@@ -24,6 +24,7 @@ export const SectionHeadPage = () => {
   const [closureTicketId, setClosureTicketId] = useState('ADU-0005');
   const [catatanRevisi, setCatatanRevisi] = useState('');
   const [isWaModalOpen, setIsWaModalOpen] = useState(false);
+  const [kasieUploads, setKasieUploads] = useState({}); // { [ticketId]: { url, name, size } }
 
   const sidebarMenu = [
     { title: 'Pemantauan Seksi' },
@@ -34,13 +35,56 @@ export const SectionHeadPage = () => {
   const targetEscalate = complaints.find(c => c.shortId === escalateTicketId) || complaints[1];
   const targetClosure = complaints.find(c => c.shortId === closureTicketId) || complaints[4] || complaints[0];
 
+  const currentKasieUpload = kasieUploads[closureTicketId];
+  const activeBuktiFoto = currentKasieUpload?.url || targetClosure?.buktiFotoUrl || null;
+
+  const handleKasiePhotoChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validasi format file gambar
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      alert('Format file tidak didukung! Harap unggah foto dengan format JPG, JPEG, atau PNG.');
+      return;
+    }
+
+    // Validasi ukuran file (maks 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ukuran foto terlalu besar! Maksimal ukuran file foto adalah 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target.result;
+      setKasieUploads(prev => ({
+        ...prev,
+        [closureTicketId]: {
+          url: dataUrl,
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB'
+        }
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveKasiePhoto = () => {
+    setKasieUploads(prev => {
+      const updated = { ...prev };
+      delete updated[closureTicketId];
+      return updated;
+    });
+  };
+
   const handleEscalateSubmit = (e) => {
     e.preventDefault();
     processEscalation(escalateTicketId, prioritas, instruksiKhusus);
   };
 
   const handleApproveClosure = () => {
-    approveClosure(closureTicketId);
+    approveClosure(closureTicketId, activeBuktiFoto);
   };
 
   const handleRejectClosure = () => {
@@ -303,16 +347,91 @@ export const SectionHeadPage = () => {
                     </div>
                   </div>
 
-                  {/* Foto Bukti Penanganan Petugas */}
+                  {/* Foto Bukti Penanganan Petugas / Kasie */}
                   <div className="space-y-2">
-                    <span className="text-xs font-bold text-emerald-800 block">2. Foto Bukti Penanganan Petugas (Hasil Pekerjaan)</span>
-                    <div className="rounded-xl overflow-hidden border-2 border-emerald-500/40 aspect-video bg-emerald-950/20 relative">
-                      {targetClosure?.buktiFotoUrl ? (
-                        <img src={targetClosure.buktiFotoUrl} alt="Bukti Selesai" className="w-full h-full object-cover" />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-800 block">2. Foto Bukti Penanganan / Tanda Selesai</span>
+                      {currentKasieUpload ? (
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <span>✓</span> Diunggah Kasie
+                        </span>
+                      ) : targetClosure?.buktiFotoUrl ? (
+                        <span className="text-[10px] bg-slate-100 text-slate-700 font-medium px-2 py-0.5 rounded-full">
+                          Dari Petugas Lapangan
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="rounded-xl overflow-hidden border-2 border-emerald-500/40 aspect-video bg-emerald-950/20 relative flex items-center justify-center">
+                      {activeBuktiFoto ? (
+                        <>
+                          <img src={activeBuktiFoto} alt="Bukti Selesai" className="w-full h-full object-cover" />
+                          <div className="absolute top-2 left-2 bg-[#0c4652] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow flex items-center gap-1">
+                            <span>📸</span>
+                            <span>Tanda Selesai Pengerjaan</span>
+                          </div>
+                        </>
                       ) : (
-                        <div className="p-6 text-center text-slate-400 text-xs">Petugas telah memverifikasi secara fisik.</div>
+                        <div className="p-6 text-center text-slate-400 text-xs">
+                          Belum ada foto penyelesaian. Silakan unggah foto tanda selesai di bawah.
+                        </div>
                       )}
                     </div>
+                  </div>
+                </div>
+
+                {/* UPLOAD FOTO BUKTI SELESAI KASIE (UNTUK TANDA SELESAI & DIKIRIM KE WA WARGA) */}
+                <div className="p-4 bg-emerald-50/70 rounded-xl border border-emerald-200/80 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <div className="text-xs font-bold text-[#0c4652] flex items-center gap-1.5">
+                        <span className="text-sm">📸</span>
+                        <span>Unggah Foto Tanda Selesai Dibuat (Petugas Kasie)</span>
+                        <span className="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                          Untuk Notifikasi WhatsApp Warga
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 mt-0.5">
+                        Unggah foto sebagai tanda fisik bahwa perbaikan telah selesai dibuat. Foto ini otomatis dipakai dan dilampirkan dalam notifikasi WhatsApp pengadu ({targetClosure?.nama} - +62 {targetClosure?.kontak}).
+                      </p>
+                    </div>
+
+                    {currentKasieUpload && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveKasiePhoto}
+                        className="text-xs text-rose-600 hover:text-rose-800 font-semibold underline self-start sm:self-auto"
+                      >
+                        ✕ Batalkan / Hapus Foto
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <label className="cursor-pointer py-2.5 px-4 bg-[#0c4652] hover:bg-[#083842] text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 shadow-sm transition shrink-0">
+                      <span>📁</span>
+                      <span>{activeBuktiFoto ? 'Ganti Foto Selesai' : 'Pilih / Ambil Foto Selesai'}</span>
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/jpg"
+                        onChange={handleKasiePhotoChange}
+                        className="hidden"
+                      />
+                    </label>
+
+                    {activeBuktiFoto ? (
+                      <div className="flex-1 flex items-center gap-2 text-xs text-emerald-800 bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-2xs">
+                        <span className="text-base text-emerald-600">✅</span>
+                        <div className="truncate">
+                          <span className="font-bold">{currentKasieUpload?.name || 'foto_bukti_selesai_resmi.jpg'}</span>
+                          {currentKasieUpload?.size && <span className="text-slate-400 ml-1.5 font-mono">({currentKasieUpload.size})</span>}
+                          <span className="text-[11px] text-slate-500 block">Foto siap dilampirkan ke laporan penutupan tiket dan dikirim ke WhatsApp warga.</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 text-xs text-amber-800 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                        ⚠️ Belum ada foto tanda selesai. Silakan unggah foto tanda selesai pengerjaan sebelum menyetujui closure.
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -343,22 +462,23 @@ export const SectionHeadPage = () => {
                     <button
                       type="button"
                       onClick={handleApproveClosure}
-                      className="flex-1 py-3 px-6 rounded-xl bg-[#0c4652] hover:bg-[#083842] text-white font-semibold text-sm shadow transition"
+                      className="flex-1 w-full py-3 px-6 rounded-xl bg-[#0c4652] hover:bg-[#083842] text-white font-semibold text-sm shadow transition flex items-center justify-center gap-2"
                     >
-                      ✓ Setujui Closure (Tutup Tiket Selesai)
+                      <span>✓</span>
+                      <span>Setujui Closure (Tutup Tiket Selesai)</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsWaModalOpen(true)}
-                      className="py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs shadow flex items-center justify-center gap-1.5 transition"
+                      className="w-full sm:w-auto py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs shadow flex items-center justify-center gap-1.5 transition"
                     >
                       <span>📲</span>
-                      <span>Preview WA Warga</span>
+                      <span>Kirim ke WhatsApp Pengadu (+Foto)</span>
                     </button>
                     <button
                       type="button"
                       onClick={handleRejectClosure}
-                      className="py-3 px-5 rounded-xl border border-red-500 hover:bg-red-50 text-red-600 font-semibold text-sm transition"
+                      className="w-full sm:w-auto py-3 px-5 rounded-xl border border-red-500 hover:bg-red-50 text-red-600 font-semibold text-sm transition"
                     >
                       ✕ Tolak & Minta Revisi
                     </button>
@@ -375,7 +495,11 @@ export const SectionHeadPage = () => {
       <WhatsAppPreviewModal
         isOpen={isWaModalOpen}
         onClose={() => setIsWaModalOpen(false)}
-        complaint={targetClosure}
+        complaint={{
+          ...targetClosure,
+          buktiFotoUrl: activeBuktiFoto,
+          buktiFotoName: currentKasieUpload?.name
+        }}
         type="selesai"
       />
     </div>

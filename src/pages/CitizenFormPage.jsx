@@ -8,6 +8,11 @@ import {
   getWhatsAppLink,
   generateWhatsAppReceivedMessage
 } from '../utils/phoneValidator';
+import {
+  validateCitizenName,
+  validateLocationAirmadidiAtas,
+  validateEvidencePhoto
+} from '../utils/formValidator';
 import { WhatsAppPreviewModal } from '../components/WhatsAppPreviewModal';
 
 export const CitizenFormPage = () => {
@@ -39,8 +44,13 @@ export const CitizenFormPage = () => {
 
   const [submittedTicket, setSubmittedTicket] = useState(null);
   const [submittedComplaint, setSubmittedComplaint] = useState(null);
-  const [phoneError, setPhoneError] = useState(null);
+  
+  // Touched states
+  const [nameTouched, setNameTouched] = useState(false);
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [photoTouched, setPhotoTouched] = useState(false);
+  const [photoError, setPhotoError] = useState(null);
+
   const [isWaModalOpen, setIsWaModalOpen] = useState(false);
 
   // Auto-save any typed changes to localStorage
@@ -50,36 +60,67 @@ export const CitizenFormPage = () => {
     } catch (e) {}
   }, [formData]);
 
-  // Phone validation status
+  // Real-time validations
+  const nameValidation = validateCitizenName(formData.nama);
   const phoneValidation = validateIndonesianPhone12Digit(formData.kontak);
+  const locationValidation = validateLocationAirmadidiAtas(formData.lokasi);
+  const photoValidation = validateEvidencePhoto(formData.fotoUrl);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'kontak') {
+    
+    if (name === 'nama') {
+      setFormData(prev => ({ ...prev, nama: value }));
+    } else if (name === 'kontak') {
       setPhoneTouched(true);
-      // Auto-format Indonesian phone
       const raw = normalizeIndonesianPhone(value);
-      // Limit to 12 digits max
       const trimmed = raw.slice(0, 12);
       const formatted = formatIndonesianPhone(trimmed);
       setFormData(prev => ({ ...prev, kontak: formatted }));
-
-      const check = validateIndonesianPhone12Digit(trimmed);
-      setPhoneError(check.errorMessage);
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const handleFileChange = (e) => {
+    setPhotoTouched(true);
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, fotoName: file.name, fotoUrl: reader.result }));
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Validasi format file (hanya gambar JPG, JPEG, PNG)
+    const validMimes = ['image/jpeg', 'image/png', 'image/jpg'];
+    const validExts = ['.jpg', '.jpeg', '.png'];
+    const fileName = file.name.toLowerCase();
+    const isExtValid = validExts.some(ext => fileName.endsWith(ext));
+    const isMimeValid = validMimes.includes(file.type.toLowerCase());
+
+    if (!isExtValid && !isMimeValid) {
+      const err = 'Format file tidak didukung. Wajib menggunakan format gambar (JPG, JPEG, PNG).';
+      setPhotoError(err);
+      alert(err);
+      return;
     }
+
+    // Validasi ukuran maksimal 5MB
+    const maxBytes = 5 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      const err = 'Ukuran foto terlalu besar. Maksimal ukuran file adalah 5MB.';
+      setPhotoError(err);
+      alert(err);
+      return;
+    }
+
+    // File valid -> load as DataURL
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData(prev => ({
+        ...prev,
+        fotoName: file.name,
+        fotoUrl: reader.result
+      }));
+      setPhotoError(null);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleReset = () => {
@@ -95,41 +136,67 @@ export const CitizenFormPage = () => {
     try {
       localStorage.removeItem('sip_citizen_form_draft');
     } catch (e) {}
-    setPhoneError(null);
+    setNameTouched(false);
     setPhoneTouched(false);
+    setPhotoTouched(false);
+    setPhotoError(null);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Strict 12-digit Indonesian phone verification
-    const valResult = validateIndonesianPhone12Digit(formData.kontak);
-    if (!valResult.isValid) {
-      setPhoneError(valResult.errorMessage);
-      setPhoneTouched(true);
-      alert(`Format Nomor WhatsApp Tidak Valid:\n${valResult.errorMessage}`);
+    // 1. Validasi Nama Pelapor (Sesuai KTP)
+    const nameCheck = validateCitizenName(formData.nama);
+    if (!nameCheck.isValid) {
+      setNameTouched(true);
+      alert(nameCheck.errorMessage);
       return;
     }
 
-    if (!formData.nama.trim() || !formData.detail.trim()) {
+    // 2. Validasi Nomor Telepon/WhatsApp
+    const phoneCheck = validateIndonesianPhone12Digit(formData.kontak);
+    if (!phoneCheck.isValid) {
+      setPhoneTouched(true);
+      alert(`Format Nomor WhatsApp Tidak Valid:\n${phoneCheck.errorMessage}`);
+      return;
+    }
+
+    // 3. Validasi Lokasi Kejadian (Khusus Kelurahan Airmadidi Atas)
+    const locCheck = validateLocationAirmadidiAtas(formData.lokasi);
+    if (!locCheck.isValid) {
+      alert(locCheck.errorMessage);
+      return;
+    }
+
+    // 4. Validasi Wajib Unggah Foto Bukti
+    const photoCheck = validateEvidencePhoto(formData.fotoUrl);
+    if (!photoCheck.isValid) {
+      setPhotoTouched(true);
+      setPhotoError(photoCheck.errorMessage);
+      alert(photoCheck.errorMessage);
+      return;
+    }
+
+    // 5. Validasi Detail Aduan
+    if (!formData.detail.trim()) {
       alert('Mohon lengkapi Nama Pengadu dan Detail Aduan.');
       return;
     }
 
     const payload = {
       ...formData,
-      kontak: '+62 ' + valResult.formatted
+      kontak: '+62 ' + phoneCheck.formatted
     };
 
     const ticketId = submitComplaint(payload);
     setSubmittedTicket(ticketId);
     
-    // Find or construct the complaint object for WhatsApp notification
+    // Construct complaint object for WhatsApp notification
     const newComplaintObj = {
       id: ticketId,
       shortId: ticketId,
       nama: formData.nama,
-      kontak: '+62 ' + valResult.formatted,
+      kontak: '+62 ' + phoneCheck.formatted,
       lokasi: formData.lokasi,
       detail: formData.detail,
       kategori: 'Infrastruktur & Lingkungan',
@@ -144,6 +211,14 @@ export const CitizenFormPage = () => {
       localStorage.removeItem('sip_citizen_form_draft');
     } catch (e) {}
   };
+
+  // Form validity check for submit button
+  const isFormCompleteAndValid = 
+    nameValidation.isValid &&
+    phoneValidation.isValid &&
+    locationValidation.isValid &&
+    photoValidation.isValid &&
+    formData.detail.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-[#f7f5ee] flex flex-col">
@@ -250,8 +325,11 @@ export const CitizenFormPage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
+              
               {/* Row 1: Nama & Kontak */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                
+                {/* 1. NAMA PELAPOR (SESUAI KTP) */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                     Nama Pengadu <span className="text-rose-500">*</span>
@@ -261,12 +339,24 @@ export const CitizenFormPage = () => {
                     name="nama"
                     value={formData.nama}
                     onChange={handleChange}
+                    onBlur={() => setNameTouched(true)}
                     placeholder="Nama lengkap sesuai KTP"
                     required
-                    className="w-full px-4 py-2.5 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#0c4652] focus:border-transparent transition"
+                    className={`w-full px-4 py-2.5 rounded-lg border text-sm transition focus:outline-none ${
+                      nameTouched && !nameValidation.isValid
+                        ? 'border-rose-400 bg-rose-50/20 focus:ring-2 focus:ring-rose-500'
+                        : 'border-slate-300 bg-white focus:ring-2 focus:ring-[#0c4652]'
+                    }`}
                   />
+                  {nameTouched && !nameValidation.isValid && (
+                    <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-start gap-1">
+                      <span className="shrink-0 mt-0.5">⚠️</span>
+                      <span>{nameValidation.errorMessage}</span>
+                    </p>
+                  )}
                 </div>
 
+                {/* 2. NOMOR TELEPON / WHATSAPP */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-semibold text-slate-700">
@@ -290,6 +380,7 @@ export const CitizenFormPage = () => {
                       name="kontak"
                       value={formData.kontak}
                       onChange={handleChange}
+                      onBlur={() => setPhoneTouched(true)}
                       placeholder="812-3456-7890"
                       required
                       className={`w-full pl-20 pr-10 py-2.5 rounded-lg border text-sm transition focus:outline-none font-mono ${
@@ -309,11 +400,10 @@ export const CitizenFormPage = () => {
                     </div>
                   </div>
 
-                  {/* Phone Validation Feedback */}
-                  {phoneTouched && phoneError ? (
+                  {phoneTouched && !phoneValidation.isValid ? (
                     <p className="text-[11px] text-rose-600 mt-1 font-medium flex items-center gap-1">
                       <span>⚠️</span>
-                      <span>{phoneError}</span>
+                      <span>{phoneValidation.errorMessage}</span>
                     </p>
                   ) : phoneValidation.isValid ? (
                     <p className="text-[11px] text-emerald-700 mt-1 font-medium flex items-center gap-1">
@@ -328,7 +418,7 @@ export const CitizenFormPage = () => {
                 </div>
               </div>
 
-              {/* Row 2: Lokasi Kejadian */}
+              {/* Row 2: Lokasi Kejadian (Tampilan Seperti Semula) */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                   Lokasi Kejadian <span className="text-rose-500">*</span>
@@ -360,17 +450,23 @@ export const CitizenFormPage = () => {
                 />
               </div>
 
-              {/* Row 4: Lampiran Foto / Berkas Pendukung */}
+              {/* Row 4: Lampiran Foto Laporan Awal (Wajib Diunggah) */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Lampiran Foto / Berkas Laporan Awal
+                  Lampiran Foto Laporan Awal (Diterima oleh Petugas Lapangan) <span className="text-rose-500">*</span>
                 </label>
-                <label className="border-2 border-dashed border-[#5794a0] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer bg-[#fbfdfc] hover:bg-[#f2f8f9] transition group">
+                <label className={`border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition group ${
+                  photoTouched && !photoValidation.isValid
+                    ? 'border-rose-400 bg-rose-50/20'
+                    : formData.fotoUrl
+                    ? 'border-emerald-500 bg-emerald-50/10'
+                    : 'border-[#5794a0] bg-[#fbfdfc] hover:bg-[#f2f8f9]'
+                }`}>
                   <input
                     type="file"
                     onChange={handleFileChange}
                     className="hidden"
-                    accept="image/*,.pdf"
+                    accept="image/jpeg,image/png,image/jpg"
                   />
                   {formData.fotoUrl ? (
                     <div className="flex flex-col items-center gap-2">
@@ -383,18 +479,23 @@ export const CitizenFormPage = () => {
                         Tarik berkas foto ke sini atau klik untuk memilih
                       </span>
                       <p className="text-xs text-slate-500 mt-1">
-                        Format JPG, PNG, PDF. Foto ini akan diteruskan ke petugas lapangan untuk verifikasi.
+                        Format JPG, PNG (Maks. 5MB). Foto ini akan diteruskan ke petugas lapangan untuk verifikasi.
                       </p>
                     </div>
                   )}
                 </label>
+                {photoTouched && !photoValidation.isValid && (
+                  <p className="text-[11px] text-rose-600 mt-1 font-medium">
+                    ⚠️ {photoValidation.errorMessage}
+                  </p>
+                )}
               </div>
 
               {/* Row 5: Action Buttons */}
               <div className="pt-2 flex items-center gap-3">
                 <button
                   type="submit"
-                  disabled={phoneTouched && !phoneValidation.isValid}
+                  disabled={!isFormCompleteAndValid}
                   className="py-2.5 px-6 rounded-lg bg-[#0c4652] hover:bg-[#083842] active:bg-[#062c34] disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold text-sm shadow-sm transition-colors flex items-center gap-2"
                 >
                   <span>Kirim Pengaduan & Notifikasi WhatsApp</span>

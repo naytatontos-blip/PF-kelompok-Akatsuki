@@ -26,7 +26,7 @@ export const LeaderDashboardPage = () => {
 
   const handleExportPDF = () => {
     showToast('Menyiapkan format dokumen resmi laporan pengaduan untuk cetak/PDF...');
-    
+
     const today = new Date();
     const options = { day: 'numeric', month: 'long', year: 'numeric' };
     const tanggalFormat = today.toLocaleDateString('id-ID', options);
@@ -267,7 +267,7 @@ export const LeaderDashboardPage = () => {
             <div style="height: 60px; display: flex; align-items: center; justify-content: center; font-size: 8pt; color: #94a3b8; font-style: italic;">
               [ Tanda Tangan & Cap Jabatan ]
             </div>
-            <p style="margin: 0; font-weight: bold; text-decoration: underline;">MARTSEN R. TONTOS, S.STP</p>
+            <p style="margin: 0; font-weight: bold; text-decoration: underline;">, Ruddy L.F Rumajar S,sos</p>
             <p style="margin: 2px 0 0; font-size: 8.5pt; color: #475569;">NIP. 19850314 200801 1 003</p>
           </div>
         </div>
@@ -285,7 +285,7 @@ export const LeaderDashboardPage = () => {
       setTimeout(() => {
         try {
           printWindow.print();
-        } catch (err) {}
+        } catch (err) { }
       }, 500);
     } else {
       alert('Popup terblokir oleh peramban. Mohon izinkan popup untuk mencetak laporan resmi.');

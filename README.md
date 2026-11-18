@@ -1,118 +1,263 @@
-# 🏛️ SIP-Publik — Kelurahan Airmadidi Atas
+# Sistem Informasi Pengaduan Pelayanan Publik (SIP-PUBLIK)
 
-Sistem Informasi Pengaduan Pelayanan Publik (**SIP-Publik**) berbasis web untuk Kelurahan Airmadidi Atas, Kabupaten Minahasa Utara. Memfasilitasi penerimaan aduan masyarakat secara transparan, penanganan teknis di lapangan dengan dokumentasi bukti foto, pemantauan bertingkat, serta notifikasi resmi WhatsApp real-time.
+Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masyarakat, Petugas Front Office, Petugas Tindak Lanjut, Kepala Seksi, Lurah/Sekretaris Lurah, dan Administrator Sistem mengajukan, memproses, dan memantau pengaduan pelayanan publik dalam satu alur, agar penanganan pengaduan lebih cepat, transparan, dan terukur.
 
----
+![Halaman utama](docs/screenshots/01_halaman_utama.png)
 
-## 🚀 Fitur Utama
+| | |
+|---|---|
+| **Mata kuliah** | System Analysis and Design — Fakultas Ilmu Komputer, Universitas Klabat |
+| **Kelompok** | [PERLU DIISI MANUAL: nomor kelompok] — Akatsuki |
+| **Objek / studi kasus** | Kelurahan Airmadidi Atas, Kecamatan Airmadidi, Kabupaten Minahasa Utara |
+| **Model SDLC** | Waterfall |
+| **Dokumen SRS** | [docs/SAD_FP_Kelompok[N]_SRS.pdf](docs/) [PERLU DIISI MANUAL: ganti [N] dengan nomor kelompok dan sesuaikan nama file] |
+| **Prototipe UI** | [https://www.figma.com/design/E3NFLZkkUn2XC62AbIDONu/Untitled?node-id=1-2&t=9fZxzmx8yvLafzG2-0](https://www.figma.com/design/E3NFLZkkUn2XC62AbIDONu/Untitled?node-id=1-2&t=9fZxzmx8yvLafzG2-0) |
 
-1. **Portal Aduan Masyarakat (Tanpa Perlu Login):**
-   - Formulir pengajuan aduan dengan input lokasi, detail masalah, dan foto laporan.
-   - Validasi ketat nomor WhatsApp resmi Indonesia dengan format awalan `+62 8xx-xxxx-xxxx` (otomatis membuang angka 0 berlebih).
-   - Fitur **Penyimpanan Draft Otomatis** (*localStorage*) agar data ketikan warga tidak hilang tiba-tiba.
-   - Pelacakan progres penanganan pengaduan secara real-time via nomor tiket unik.
-   - Penilaian kepuasan masyarakat (bintang 1–5 & ulasan).
+## Anggota Kelompok
 
-2. **Panel Petugas Internal (Multi-Peran dengan Kata Sandi Khusus):**
-   - **Front Office:** Verifikasi berkas, validasi nomor kontak warga, dan disposisi aduan ke seksi yang berwenang.
-   - **Petugas Tindak Lanjut (Tim Lapangan):** Konfirmasi disposisi, eksekusi fisik di lapangan, unggah foto dokumentasi penyelesaian, dan penerusan notifikasi WhatsApp ke pelapor.
-   - **Kepala Seksi (Kasie):** Pemantauan penanganan seksi, peninjauan bukti foto lapangan, eskalasi prioritas, dan persetujuan penutupan (*approval closure*).
-   - **Lurah / Sekretaris Lurah:** Dashboard eksekutif statistik capaian kinerja dan kepuasan masyarakat.
-   - **Administrator Sistem:** Manajemen akun pengguna (tambah, nonaktifkan, reset sandi) dan riwayat log audit aktivitas.
+| No | Nama | NIM | Peran | Kontribusi utama |
+|----|------|-----|-------|------------------|
+| 1 | Satia, Elswit Dea Narwastu | 105012410059 | Project Leader & System Analyst | Memimpin alur proyek, komunikasi stakeholder, Use Case Description (UC-01 s.d. UC-22), Activity Diagram |
+| 2 | Tatontos, Naydeline | 105022410009 | System Analyst & Data Modeler | Use Case Diagram, Data Model (skema basis data) |
+| 3 | Palari, Sesilia | 105012410098 | System Analyst / Architect | Class Diagram (kelas, atribut, relasi antar-objek) |
+| 4 | Sahay, Priskilla Anatasya | 105012410103 | System Analyst / Architect | Sequence Diagram (interaksi antar-objek tiap skenario) |
+| 5 | Umbas, Gheanina Imanuela | 105012410009 | UI/UX Designer | Alur dan desain antarmuka (prototipe L-01 s.d. L-08) |
 
-3. **Notifikasi WhatsApp Resmi:**
-   - Pembuatan pesan WA resmi otomatis saat pengaduan diterima & diverifikasi.
-   - Pembuatan pesan WA resmi otomatis saat pengaduan selesai ditangani beserta tautan foto bukti pengerjaan di lapangan.
+## Latar Belakang
 
----
+- **Masalah:** Pencatatan pengaduan masih manual dan konvensional, sehingga status laporan sulit dilacak, disposisi lambat, catatan rentan hilang atau rusak, dan rekapitulasi laporan kinerja memakan waktu.
+- **Kondisi saat ini:** Warga datang langsung ke kantor kelurahan atau melapor ke RT/RW. Petugas mencatat aduan di buku agenda/register fisik, lalu meneruskannya secara verbal atau lewat lembar disposisi kertas ke seksi terkait, kadang dengan WhatsApp pribadi yang tidak terintegrasi. Belum ada nomor identitas unik, standar waktu penyelesaian (SLA), maupun pelacakan status bagi pengadu. Kantor memiliki 2 unit komputer desktop dan Wi-Fi lokal yang belum stabil pada jam sibuk.
+- **Tujuan sistem:** Mendigitalisasi pengelolaan pengaduan agar koordinasi antar petugas lebih efisien, masyarakat dapat menyampaikan keluhan dan memantau progresnya, rekapitulasi lebih cepat, serta transparansi dan kepercayaan masyarakat terhadap pelayanan kelurahan meningkat.
+- **Pengguna (aktor):**
+  - **Masyarakat Umum (Pengadu):** menyampaikan keluhan, melacak progres, dan memberi ulasan tanpa login.
+  - **Petugas Front Office:** memverifikasi aduan, menetapkan kategori awal, dan melakukan disposisi.
+  - **Petugas Tindak Lanjut:** menerima disposisi, memperbarui status, mengunggah bukti, dan menanggapi pengadu.
+  - **Kepala Seksi (Kasie):** memantau SLA, melakukan eskalasi, dan menyetujui penutupan aduan.
+  - **Lurah / Sekretaris Lurah:** memantau dasbor statistik dan mengekspor laporan kinerja.
+  - **Administrator Sistem:** mengelola akun, master kategori, konfigurasi, dan log audit.
 
-## 🛠️ Tech Stack
+## Fitur Utama
 
-* **Frontend:** React 18, Tailwind CSS v3, Lucide React, Google Fonts (*Plus Jakarta Sans* & *Inter*)
-* **Build Tool:** Vite 6
-* **Backend:** Node.js Native REST API (Port 5000)
-* **Database:** JSON File Document Store (`backend/data/database.json`) & Browser LocalStorage
-* **Mode Mandiri:** `standalone-app.html` (dapat dijalankan luring / tanpa proses build)
+| No | Fitur | Aktor | Use case | Kebutuhan |
+|----|-------|-------|----------|-----------|
+| 1 | Login petugas internal berbasis peran (RBAC) | Petugas Kelurahan (Front Office, Tindak Lanjut, Kasie, Lurah/Seklur, Admin) | UC-01 | FR-01 |
+| 2 | Portal pengajuan pengaduan dengan nomor tiket unik otomatis (tanpa login) | Masyarakat Umum | UC-02 | FR-02 |
+| 3 | Pelacakan status berbasis nomor tiket, notifikasi otomatis (WhatsApp/SMS/sistem), dan ulasan kepuasan | Masyarakat Umum, Sistem | UC-03, UC-04, UC-05 | FR-03, FR-04, FR-05 |
+| 4 | Verifikasi pengaduan, penetapan kategori awal, dan disposisi | Petugas Front Office | UC-06, UC-07, UC-08 | FR-06, FR-07, FR-08 |
+| 5 | Penanganan lapangan: terima disposisi, perbarui status, unggah bukti, tanggapan resmi | Petugas Tindak Lanjut | UC-09, UC-10, UC-11, UC-12 | FR-09, FR-10, FR-11, FR-12 |
+| 6 | Pemantauan SLA, eskalasi, dan persetujuan penutupan aduan | Kepala Seksi | UC-13, UC-14, UC-15 | FR-13, FR-14, FR-15 |
+| 7 | Rekapitulasi data, dasbor statistik, dan ekspor laporan kinerja (PDF/Excel) | Lurah / Sekretaris Lurah | UC-16, UC-17, UC-18 | FR-16, FR-17, FR-18 |
+| 8 | Manajemen akun, master kategori, konfigurasi sistem, dan log audit | Administrator Sistem | UC-19, UC-20, UC-21, UC-22 | FR-19, FR-20, FR-21, FR-22 |
 
----
+## Screenshot
 
-## 📂 Struktur Folder Proyek
+**[UC-01] Login**
+
+![UC-01](docs/screenshots/02_uc01.png)
+
+**[UC-02] Ajukan Pengaduan**
+
+![UC-02](docs/screenshots/03_uc02.png)
+
+**[UC-03] Lacak Status Pengaduan**
+
+![UC-03](docs/screenshots/04_uc03.png)
+
+**[UC-06, UC-07, UC-08] Verifikasi Pengaduan, Tetapkan Kategori Awal, Disposisikan Pengaduan**
+
+![UC-06 s.d. UC-08](docs/screenshots/05_uc06.png)
+
+**[UC-09 s.d. UC-12] Terima Disposisi, Perbarui Status, Unggah Bukti, Tanggapan kepada Pengadu**
+
+![UC-09 s.d. UC-12](docs/screenshots/06_uc09.png)
+
+**[UC-13, UC-14, UC-15] Pantau Progres, Eskalasi, Setujui Penutupan Pengaduan**
+
+![UC-13 s.d. UC-15](docs/screenshots/07_uc13.png)
+
+**[UC-16, UC-17, UC-18] Akses Data & Laporan, Dashboard Statistik, Ekspor Laporan Kinerja**
+
+![UC-16 s.d. UC-18](docs/screenshots/08_uc16.png)
+
+**[UC-19 s.d. UC-22] Kelola Akun, Kelola Kategori, Konfigurasi Sistem, Pantau Log Audit**
+
+![UC-19 s.d. UC-22](docs/screenshots/09_uc19.png)
+
+**Validasi input**
+
+![Pesan validasi](docs/screenshots/10_validasi.png)
+
+[PERLU DIISI MANUAL: ambil screenshot pesan validasi, mis. login dengan kredensial salah ("Username, password, atau peran tidak valid") atau unggah file di atas 10 MB]
+
+## Teknologi
+
+| Lapisan | Teknologi | Versi |
+|---------|-----------|-------|
+| Front-end | React, Tailwind CSS, Vite (JavaScript ES6+ & JSX, HTML5, CSS3), Lucide React, font Plus Jakarta Sans | React 18; Tailwind CSS 3; Vite [PERLU DIISI MANUAL: versi Vite] |
+| Back-end | Node.js, REST API dengan modul HTTP bawaan (native) | [PERLU DIISI MANUAL: versi Node.js] |
+| Database | NoSQL berbasis dokumen JSON (`backend/data/database.json`) di sisi server dan Web Storage (LocalStorage) di sisi klien | — |
+| Tools pemodelan | Enterprise Architect, mermaid.js, Draw.io | — |
+| Prototipe UI | Figma | — |
+
+## Kebutuhan Sistem
+
+- Node.js dan npm [PERLU DIISI MANUAL: versi minimum Node.js yang diuji]
+- Tidak perlu server database terpisah, karena data tersimpan di berkas JSON
+- Git
+- Browser modern (Google Chrome atau Firefox versi terbaru); port 3000 (frontend) dan 5000 (backend API) harus tersedia
+
+## Instalasi dan Menjalankan Aplikasi
+
+1. Clone repository:
+
+   ```bash
+   git clone https://github.com/naytatontos-blip/PF-kelompok-Akatsuki.git
+   cd PF-kelompok-Akatsuki
+   ```
+
+2. Pasang dependensi:
+
+   ```bash
+   npm install
+   ```
+
+3. Siapkan konfigurasi. Struktur repository tidak memuat file `.env`; aplikasi memakai port bawaan 3000 (frontend) dan 5000 (backend API). [PERLU DIISI MANUAL: konfirmasi apakah ada konfigurasi lain yang perlu disesuaikan]
+
+4. Siapkan database. Tidak ada langkah khusus: backend memakai `backend/data/database.json` yang sudah tersedia di repository. Berkas `backend/schema.sql` adalah skema relasional cadangan dan tidak wajib dijalankan.
+
+5. Jalankan aplikasi (frontend dan backend sekaligus lewat skrip peluncur):
+
+   ```bash
+   node start.js
+   ```
+
+   [PERLU DIISI MANUAL: konfirmasi perintah, mis. `npm start`, sesuai `package.json`]
+
+   Alternatif, jalankan manual di dua terminal:
+
+   ```bash
+   node backend/server.js   # API backend, port 5000
+   node server.js           # frontend lokal, port 3000
+   ```
+
+6. Buka [http://localhost:3000](http://localhost:3000) di browser. Portal warga dapat dipakai tanpa login, sedangkan petugas masuk lewat menu Login Petugas.
+
+### Akun uji
+
+| Aktor | Username / email | Password |
+|-------|------------------|----------|
+| Petugas Front Office | petugas.a | [PERLU DIISI MANUAL: password uji] |
+| Petugas Tindak Lanjut | petugas.b | [PERLU DIISI MANUAL: password uji] |
+| Kepala Seksi (Kasie) | kasie.bang | [PERLU DIISI MANUAL: password uji] |
+| Lurah / Sekretaris Lurah | lurah.airmadidi | [PERLU DIISI MANUAL: password uji] |
+| Administrator Sistem | admin.sip | [PERLU DIISI MANUAL: password uji] |
+
+Masyarakat umum (pengadu) tidak memerlukan akun.
+
+## Struktur Folder
 
 ```text
-SIP-PUBLIK/
-├── backend/                        # Server Backend REST API & Database
+PF-kelompok-Akatsuki/
+├── backend/                    # server REST API dan database (lapisan control & data, SRS 7.2 dan Bagian 8)
 │   ├── data/
-│   │   └── database.json           # Basis data utama berbasis berkas JSON
-│   ├── database.js                 # Logika query & manipulasi basis data
-│   ├── express-app.js              # Rute Express opsional
-│   ├── schema.sql                  # Skema relasional SQL cadangan
-│   └── server.js                   # Server API Node.js bawaan (Port 5000)
-├── src/                            # Kode Sumber Frontend (React 18)
-│   ├── components/                 # Komponen Antarmuka yang Dapat Digunakan Ulang
-│   │   ├── Common/
-│   │   │   └── StatusBadge.jsx     # Komponen lencana warna status aduan
-│   │   ├── Navbar.jsx              # Bilah navigasi atas
-│   │   ├── Sidebar.jsx             # Bilah menu samping dinamis sesuai peran
-│   │   └── WhatsAppPreviewModal.jsx# Modal pratinjau pesan resmi WhatsApp
+│   │   └── database.json       # basis data utama berbasis JSON
+│   ├── database.js             # logika query dan manipulasi basis data
+│   ├── express-app.js          # rute Express opsional
+│   ├── schema.sql              # skema relasional SQL cadangan
+│   └── server.js               # server API Node.js bawaan (port 5000)
+├── src/                        # source code frontend React 18
+│   ├── components/             # komponen antarmuka yang dapat digunakan ulang
+│   │   ├── Common/StatusBadge.jsx      # lencana warna status aduan
+│   │   ├── Navbar.jsx                  # bilah navigasi atas (portal warga)
+│   │   ├── Sidebar.jsx                 # menu samping dinamis sesuai peran
+│   │   └── WhatsAppPreviewModal.jsx    # modal pratinjau pesan resmi WhatsApp
 │   ├── context/
-│   │   └── AppContext.jsx          # Manajemen state global (Auth, Data, SLA)
+│   │   └── AppContext.jsx      # state global (Auth, Data, SLA)
 │   ├── data/
-│   │   └── mockData.js             # Data simulasi awal & kategori aduan
-│   ├── pages/                      # Halaman Antarmuka Setiap Aktor
-│   │   ├── AdminPage.jsx           # Panel Administrator (Manajemen Akun & Audit)
-│   │   ├── CitizenFormPage.jsx     # Formulir pengajuan aduan masyarakat
-│   │   ├── CitizenTrackingPage.jsx # Halaman lacak status tiket aduan
-│   │   ├── FieldOfficerPage.jsx    # Panel Petugas Tindak Lanjut (Bukti Foto)
-│   │   ├── FrontOfficePage.jsx     # Panel Front Office (Verifikasi & Disposisi)
-│   │   ├── LeaderDashboardPage.jsx # Panel Pimpinan (Statistik & Rating)
-│   │   ├── LoginPage.jsx           # Halaman login dengan kata sandi khusus
-│   │   └── SectionHeadPage.jsx     # Panel Kasie (Pemantauan & Approval)
+│   │   └── mockData.js         # data simulasi awal dan kategori aduan
+│   ├── pages/                  # halaman antarmuka tiap aktor, sesuai prototipe UI (SRS Bagian 9)
+│   │   ├── LoginPage.jsx               # login petugas (UC-01)
+│   │   ├── CitizenFormPage.jsx         # formulir pengaduan masyarakat (UC-02)
+│   │   ├── CitizenTrackingPage.jsx     # lacak status tiket (UC-03 s.d. UC-05)
+│   │   ├── FrontOfficePage.jsx         # verifikasi dan disposisi (UC-06 s.d. UC-08)
+│   │   ├── FieldOfficerPage.jsx        # petugas tindak lanjut, bukti foto (UC-09 s.d. UC-12)
+│   │   ├── SectionHeadPage.jsx         # panel Kasie: pemantauan dan approval (UC-13 s.d. UC-15)
+│   │   ├── LeaderDashboardPage.jsx     # statistik dan rating Lurah (UC-16 s.d. UC-18)
+│   │   └── AdminPage.jsx               # manajemen akun dan audit (UC-19 s.d. UC-22)
 │   ├── services/
-│   │   └── api.js                  # Klien pemanggil REST API backend
+│   │   └── api.js              # klien pemanggil REST API backend
 │   ├── utils/
-│   │   └── phoneValidator.js       # Modul validasi nomor HP (+62 8xx) & format WA
-│   ├── App.jsx                     # Komponen induk router antarmuka
-│   ├── index.css                   # Berkas konfigurasi styling Tailwind CSS
-│   └── main.jsx                    # Titik masuk utama aplikasi React
-├── index.html                      # Template utama HTML Vite
-├── package.json                    # Daftar pustaka & dependensi proyek
-├── postcss.config.js               # Konfigurasi modul PostCSS
-├── README.md                       # Dokumentasi resmi proyek sistem
-├── server.js                       # Server frontend lokal (Port 3000)
-├── standalone-app.html             # Aplikasi mandiri luring (Single-file SPA)
-├── start.js                        # Skrip peluncur otomatis Frontend & Backend
-├── tailwind.config.js              # Konfigurasi palet warna & tema Tailwind CSS
-└── vite.config.js                  # Konfigurasi compiler Vite bundler
+│   │   └── phoneValidator.js   # validasi nomor HP (+62 8xx) dan format WhatsApp
+│   ├── App.jsx                 # komponen induk router antarmuka
+│   ├── index.css               # berkas styling Tailwind CSS
+│   └── main.jsx                # titik masuk utama aplikasi React
+├── docs/
+│   ├── SAD_FP_Kelompok[N]_SRS.pdf
+│   ├── diagrams/               # file sumber diagram UML (.drawio, .puml, dsb.)
+│   └── screenshots/
+├── index.html                  # template utama HTML
+├── package.json                # daftar pustaka dan dependensi proyek
+├── postcss.config.js           # konfigurasi modul PostCSS
+├── tailwind.config.js          # konfigurasi palet warna dan tema Tailwind CSS
+├── vite.config.js              # konfigurasi compiler Vite
+├── server.js                   # server frontend lokal (port 3000)
+├── start.js                    # skrip peluncur otomatis frontend dan backend
+├── standalone-app.html         # aplikasi mandiri luring (single-file SPA)
+├── .gitignore
+└── README.md
 ```
 
----
+[PERLU DIISI MANUAL: pastikan folder `docs/` (SRS, diagram, screenshot) sudah ada di repository dan ganti `[N]` pada nama file SRS]
 
-## 🔑 Kredensial Akun & Kata Sandi Khusus Petugas
+## Rancangan Sistem
 
-Setiap petugas memiliki kata sandi khusus yang berbeda dan tidak dapat diakses dengan kata sandi milik petugas lain:
+Ringkasan rancangan; detail lengkap ada di dokumen SRS.
 
-| No | Peran / Aktor | Nama Petugas | Username | Kata Sandi Khusus | Wewenang |
-|:---:|:---|:---|:---:|:---:|:---|
-| 1 | **Front Office** | Petugas A | `petugas.a` | `frontoffice123` | Penerimaan, verifikasi awal & disposisi |
-| 2 | **Tindak Lanjut** | Petugas B | `petugas.b` | `tindaklanjut123` | Penanganan lapangan & upload bukti foto |
-| 3 | **Kepala Seksi** | Kasie Pembangunan | `kasie.bang` | `kasiebang123` | Monitoring seksi, eskalasi & approval penutupan |
-| 4 | **Lurah / Seklur** | Lurah Airmadidi Atas | `lurah.airmadidi` | `lurah2026` | Monitoring eksekutif & statistik kepuasan |
-| 5 | **Administrator** | Admin Utama | `admin.sip` | `admin2026` | Kelola akun aparatur & audit log sistem |
+| Artefak | Lokasi |
+|---------|--------|
+| Kebutuhan fungsional dan non-fungsional | SRS Bagian 5 |
+| Use case diagram dan description | SRS Bagian 6 · `docs/diagrams/[PERLU DIISI MANUAL: nama file use case diagram]` |
+| Activity dan sequence diagram | SRS Bagian 6.4 dan 7.1 |
+| Class diagram | SRS Bagian 7.2 |
+| Model data (ERD) dan kamus data | SRS Bagian 8 |
+| Prototipe UI | [Figma](https://www.figma.com/design/E3NFLZkkUn2XC62AbIDONu/Untitled?node-id=1-2&t=9fZxzmx8yvLafzG2-0) · SRS Bagian 9 |
 
----
+![Class diagram](docs/diagrams/class_diagram.png)
 
-## 💻 Cara Menjalankan Aplikasi
+## Pengujian
 
-### Menjalankan Server Lengkap (Frontend + Backend):
-```bash
-node start.js
-```
-* **Frontend Web:** [http://localhost:3000](http://localhost:3000)
-* **Backend API:** [http://localhost:5000/api](http://localhost:5000/api)
+Ringkasan: **6 kasus uji, 4 lulus** (TC-05 dan TC-06 baru berstatus *Designed* pada matriks keterlacakan). Daftar lengkap ada di SRS 10.4 dan sheet Pengujian pada Lembar Kerja Proyek.
 
-### Menjalankan Mode Mandiri (Offline / Tanpa Instalasi):
-Cukup buka berkas `standalone-app.html` langsung di Google Chrome atau browser pilihan Anda.
+| ID | Use case | Skenario | Hasil diharapkan | Status |
+|----|----------|----------|------------------|--------|
+| TC-01 | UC-01 | Login dengan data benar (role Front Office, password valid) | Masuk ke Dasbor Front Office | Lulus |
+| TC-02 | UC-01 | Login dengan password salah | Tampil pesan "Kredensial Tidak Valid" | Lulus |
+| TC-03 | UC-02 | Ajukan aduan lengkap (data valid + foto < 10 MB) | Terbit nomor tiket unik ADU-xxxx | Lulus |
+| TC-04 | UC-03 | Lacak tiket dengan nomor tiket valid | Tampilkan linimasa progres | Lulus |
+| TC-05 | UC-06 | [PERLU DIISI MANUAL: skenario verifikasi pengaduan] | [PERLU DIISI MANUAL: hasil diharapkan] | Designed (belum diuji) |
+| TC-06 | UC-08 | [PERLU DIISI MANUAL: skenario disposisi pengaduan] | [PERLU DIISI MANUAL: hasil diharapkan] | Designed (belum diuji) |
 
----
+## Keterbatasan dan Pengembangan Berikutnya
 
-© 2026 Pemerintah Kelurahan Airmadidi Atas, Kabupaten Minahasa Utara.
+- Notifikasi WhatsApp/SMS pada prototipe yang dibangun masih berupa simulasi (modal pratinjau pesan WhatsApp) dan belum terhubung ke gateway WhatsApp API/SMS. Notifikasi cadangan di dalam sistem disediakan bila pengiriman gagal (UC-04 A1).
+- Basis data yang dipakai saat ini adalah berkas JSON dan LocalStorage, bukan RDBMS. Skema relasional (`backend/schema.sql`) baru berupa cadangan.
+- Ekspor laporan pada tampilan yang dibangun berupa PDF dan CSV, sedangkan kebutuhan FR-18 menyebut PDF dan Excel (.xlsx).
+- Di luar ruang lingkup: sengketa hukum/pidana berat, transaksi pembayaran, peta GIS interaktif skala besar, dan modul absensi kepegawaian.
+- Batasan operasional: lampiran maksimal 10 MB per file dengan format PDF, JPG, atau PNG; kantor kelurahan hanya memiliki 2 unit komputer dan koneksi Wi-Fi belum stabil pada jam sibuk.
+- Pengujian baru mencakup TC-01 s.d. TC-04 (login, pengajuan, pelacakan); TC-05 dan TC-06 masih berstatus Designed.
+- Bug yang diketahui: [PERLU DIISI MANUAL: daftar bug yang belum diperbaiki, jika ada]
+- Rencana pengembangan: deploy ke cloud (Vercel/Netlify untuk frontend, Railway/Render untuk backend), integrasi gateway WhatsApp/SMS, penyusunan SOP, pelatihan singkat dan buku panduan per peran bagi petugas, prosedur memasukkan data pengaduan lama yang relevan, serta rencana pemeliharaan bersama pihak kelurahan.
+
+## Penggunaan AI dan Referensi
+
+| Alat AI | Dipakai untuk | Yang diperiksa atau diubah dari hasilnya |
+|---------|---------------|------------------------------------------|
+| Gemini AI | Memindahkan, memetakan (mapping), dan menyesuaikan format data dari draf laporan ke template SRS resmi dosen pengampu (semua bagian tabel di SRS) | Mengoreksi ketidaksesuaian struktur bagian, melengkapi nomor urut bagian yang hilang, dan memastikan isi tabel sesuai SRS resmi dari dosen pengampu |
+| Gemini AI | Menyusun draf rinci Use Case Description berdasarkan Use Case Diagram dan draf awal (Bagian 6.3, UC-01 s.d. UC-22) | Memeriksa kebenaran alur utama dan alternatif, kesesuaian aktor, serta konsistensi relasi include/extend dengan diagram UML |
+| [PERLU DIISI MANUAL: nama alat AI generatif untuk prototipe] | Merancang tata letak antarmuka, alur visual, dan panduan desain prototipe (SRS 10.1) | [PERLU DIISI MANUAL: bagian yang diperiksa atau diubah] |
+| [PERLU DIISI MANUAL: alat AI untuk penulisan kode, jika ada] | [PERLU DIISI MANUAL] | [PERLU DIISI MANUAL] |
+
+Referensi:
+
+1. A. Dennis, B. H. Wixom, and D. Tegarden, *Systems Analysis and Design: An Object-Oriented Approach with UML*, 5th ed. Hoboken, NJ, USA: Wiley, 2015.
+2. Laporan Draf Analisis & Perancangan Sistem Informasi Pengaduan Pelayanan Publik (SIP-PUBLIK) Kelurahan Airmadidi Atas, 2026.

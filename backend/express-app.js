@@ -7,6 +7,11 @@
 import express from 'express';
 import cors from 'cors';
 import { db } from './database.js';
+import { 
+  validateCitizenName, 
+  validateLocationAirmadidiAtas, 
+  validateEvidencePhoto 
+} from './validator.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -73,10 +78,40 @@ app.get('/api/complaints', (req, res) => {
 });
 
 app.post('/api/complaints', (req, res) => {
-  const { nama, kontak, detail } = req.body;
-  if (!nama || !kontak || !detail) {
-    return res.status(400).json({ success: false, message: 'Nama, kontak, dan detail aduan wajib diisi.' });
+  const { nama, kontak, detail, lokasi, fotoUrl, buktiFoto } = req.body;
+
+  // 1. Validasi Nama Pelapor (Sesuai KTP)
+  const nameCheck = validateCitizenName(nama);
+  if (!nameCheck.isValid) {
+    return res.status(400).json({ success: false, message: nameCheck.message });
   }
+
+  // 2. Validasi Nomor Telepon
+  const rawDigits = String(kontak || '').replace(/\D/g, '').replace(/^62/, '0');
+  if (rawDigits.length !== 12 || !rawDigits.startsWith('08')) {
+    return res.status(400).json({
+      success: false,
+      message: `Nomor telepon/WhatsApp harus nomor resmi Indonesia 12 digit diawali 08 (contoh: 0812-3456-7890). Saat ini: ${rawDigits.length} digit.`
+    });
+  }
+
+  // 3. Validasi Lokasi Kejadian (Khusus Kelurahan Airmadidi Atas)
+  const locCheck = validateLocationAirmadidiAtas(lokasi);
+  if (!locCheck.isValid) {
+    return res.status(400).json({ success: false, message: locCheck.message });
+  }
+
+  // 4. Validasi Wajib Unggah Foto Bukti
+  const photoCheck = validateEvidencePhoto(fotoUrl || (buktiFoto && buktiFoto[0]));
+  if (!photoCheck.isValid) {
+    return res.status(400).json({ success: false, message: photoCheck.message });
+  }
+
+  // 5. Validasi Detail Aduan
+  if (!detail || !detail.trim()) {
+    return res.status(400).json({ success: false, message: 'Detail aduan wajib diisi.' });
+  }
+
   const item = db.createComplaint(req.body);
   res.status(201).json({ success: true, message: 'Pengaduan tersimpan.', ticketId: item.id, data: item });
 });
@@ -172,9 +207,13 @@ app.post('/api/complaints/:id/escalate', (req, res) => {
 });
 
 app.post('/api/complaints/:id/approve-closure', (req, res) => {
-  const updated = db.updateComplaint(req.params.id, { status: 'Selesai' });
+  const updateData = { status: 'Selesai', statusTimeline: 'Selesai' };
+  if (req.body.buktiFotoUrl) {
+    updateData.buktiFotoUrl = req.body.buktiFotoUrl;
+  }
+  const updated = db.updateComplaint(req.params.id, updateData);
   if (!updated) return res.status(404).json({ success: false, message: 'Tiket tidak ditemukan.' });
-  db.createAuditLog(`Approval closure ${req.params.id}`, req.body.user || 'kasie.bang');
+  db.createAuditLog(`Approval closure ${req.params.id}${req.body.buktiFotoUrl ? ' dengan bukti foto selesai' : ''}`, req.body.user || 'kasie.bang');
   res.json({ success: true, message: 'Aduan disetujui untuk ditutup (Closure Selesai).', data: updated });
 });
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getWhatsAppLink } from '../utils/phoneValidator';
+import { getWhatsAppLink, generateWhatsAppResolvedMessage } from '../utils/phoneValidator';
 
 export const WhatsAppPreviewModal = ({ isOpen, onClose, complaint, type = 'terima' }) => {
   const [copied, setCopied] = useState(false);
@@ -12,7 +12,7 @@ export const WhatsAppPreviewModal = ({ isOpen, onClose, complaint, type = 'terim
   const photoUrl = complaint.buktiFotoUrl || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80';
 
   const messageText = isResolved
-    ? `*SIP-PUBLIK KELURAHAN AIRMADIDI ATAS*\n✅ *Pemberitahuan Resmi Penyelesaian Pengaduan*\n\nYth. Bpk/Ibu *${complaint.nama || 'Warga'}*,\n\nKabar baik! Pengaduan Anda dengan nomor tiket *${shortId}* telah *SELESAI DITANGANI* oleh tim petugas lapangan Kelurahan Airmadidi Atas.\n\n📋 *Nomor Tiket:* ${shortId}\n📍 *Lokasi:* ${complaint.lokasi || '-'}\n🛠️ *Petugas:* ${complaint.petugas || 'Tim Lapangan'}\n📝 *Catatan Pengerjaan:* ${complaint.catatanProgres || 'Pekerjaan perbaikan fisik di lapangan telah selesai 100%.'}\n💬 *Tanggapan Resmi:* ${complaint.tanggapanResmi || 'Saluran/fasilitas telah dinormalisasi.'}\n\n📸 *BUKTI FOTO PENYELESAIAN:*\n${photoUrl}\n\nMohon berikan rating ulasan:\n🔗 http://localhost:3000/#/track?id=${shortId}\n\nTerima kasih!`
+    ? generateWhatsAppResolvedMessage(complaint)
     : `*SIP-PUBLIK KELURAHAN AIRMADIDI ATAS*\n🏛️ *Pemberitahuan Resmi Penerimaan Pengaduan*\n\nYth. Bpk/Ibu *${complaint.nama || 'Warga'}*,\n\nPengaduan Anda telah *DITERIMA & DIVERIFIKASI* oleh Kelurahan Airmadidi Atas:\n\n📋 *Nomor Tiket:* ${shortId}\n📍 *Lokasi:* ${complaint.lokasi || '-'}\n📂 *Kategori:* ${complaint.kategori || 'Infrastruktur & Lingkungan'}\n🎯 *Tujuan Disposisi:* ${complaint.tujuanDisposisi || 'Seksi Pembangunan'}\n⏱️ *Estimasi SLA:* 3 Hari Kerja\n\n🔗 *Lacak Progres Real-Time:*\nhttp://localhost:3000/#/track?id=${shortId}\n\nTerima kasih atas laporan Anda.`;
 
   const waUrl = getWhatsAppLink(rawPhone, messageText);
