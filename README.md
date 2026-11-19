@@ -18,10 +18,10 @@ Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masya
 | No | Nama | NIM | Peran | Kontribusi utama |
 |----|------|-----|-------|------------------|
 | 1 | Satia, Elswit Dea Narwastu | 105012410059 | Project Leader & System Analyst | Memimpin alur proyek, komunikasi stakeholder, Use Case Description (UC-01 s.d. UC-22), Activity Diagram |
-| 2 | Tatontos, Naydeline | 105022410009 | System Analyst & Data Modeler | Use Case Diagram, Data Model (skema basis data) |
+| 2 | Tatontos, Naydeline | 105022410009 | System Analyst, Data Modeler & Developer | Use Case Diagram, Data Model (skema basis data), Merancang dan Menguji Sistem SIP-Publik, dan README |
 | 3 | Palari, Sesilia | 105012410098 | System Analyst / Architect | Class Diagram (kelas, atribut, relasi antar-objek) |
 | 4 | Sahay, Priskilla Anatasya | 105012410103 | System Analyst / Architect | Sequence Diagram (interaksi antar-objek tiap skenario) |
-| 5 | Umbas, Gheanina Imanuela | 105012410009 | UI/UX Designer | Alur dan desain antarmuka (prototipe L-01 s.d. L-08) |
+| 5 | Umbas, Gheanina Imanuela | 105012410009 | UI/UX Designer, QA dan dokumentasi  | Alur dan desain antarmuka (prototipe L-01 s.d. L-08), Slide |
 
 ## Latar Belakang
 
@@ -95,14 +95,13 @@ Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masya
 
 ![Pesan validasi](<img width="953" height="435" alt="image" src="https://github.com/user-attachments/assets/edfeea27-25f2-4fbf-925f-613c8c6f0703" />
 )
-
-[PERLU DIISI MANUAL: Halaman pengajuan masyarakat,memasukkan nama harus sesuai dengan yang di minta,dan no Hp/WhatsApp harus 12 digit
+[UC-02] Halaman pengajuan masyarakat,memasukkan nama harus sesuai dengan yang di minta,dan no Hp/WhatsApp harus 12 digit
 ## Teknologi
 
 | Lapisan | Teknologi | Versi |
 |---------|-----------|-------|
-| Front-end | React, Tailwind CSS, Vite (JavaScript ES6+ & JSX, HTML5, CSS3), Lucide React, font Plus Jakarta Sans | React 18; Tailwind CSS 3; Vite [PERLU DIISI MANUAL: versi Vite] |
-| Back-end | Node.js, REST API dengan modul HTTP bawaan (native) | [PERLU DIISI MANUAL: versi Node.js] |
+| Front-end | React, Tailwind CSS, Vite (JavaScript ES6+ & JSX, HTML5, CSS3), Lucide React, font Plus Jakarta Sans | React 18; Tailwind CSS 3; Vite versi 6|
+| Back-end | Node.js, REST API dengan modul HTTP bawaan (native) | v26.7.0 |
 | Database | NoSQL berbasis dokumen JSON (`backend/data/database.json`) di sisi server dan Web Storage (LocalStorage) di sisi klien | — |
 | Tools pemodelan | Enterprise Architect, mermaid.js, Draw.io | — |
 | Prototipe UI | Figma | 
@@ -129,7 +128,7 @@ Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masya
    npm install
    ```
 
-3. Siapkan konfigurasi. Struktur repository tidak memuat file `.env`; aplikasi memakai port bawaan 3000 (frontend) dan 5000 (backend API). [PERLU DIISI MANUAL: konfirmasi apakah ada konfigurasi lain yang perlu disesuaikan]
+3. Siapkan konfigurasi. Struktur repository tidak memuat file `.env`; aplikasi memakai port bawaan 3000 (frontend) dan 5000 (backend API). 
 
 4. Siapkan database. Tidak ada langkah khusus: backend memakai `backend/data/database.json` yang sudah tersedia di repository. Berkas `backend/schema.sql` adalah skema relasional cadangan dan tidak wajib dijalankan.
 
@@ -139,7 +138,7 @@ Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masya
    node start.js
    ```
 
-   [PERLU DIISI MANUAL: konfirmasi perintah, mis. `npm start`, sesuai `package.json`]
+   `npm start`, 
 
    Alternatif, jalankan manual di dua terminal:
 
@@ -154,11 +153,11 @@ Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masya
 
 | Aktor | Username / email | Password |
 |-------|------------------|----------|
-| Petugas Front Office | petugas.a | [PERLU DIISI MANUAL: password uji] |
-| Petugas Tindak Lanjut | petugas.b | [PERLU DIISI MANUAL: password uji] |
-| Kepala Seksi (Kasie) | kasie.bang | [PERLU DIISI MANUAL: password uji] |
-| Lurah / Sekretaris Lurah | lurah.airmadidi | [PERLU DIISI MANUAL: password uji] |
-| Administrator Sistem | admin.sip | [PERLU DIISI MANUAL: password uji] |
+| Petugas Front Office | petugas.a | frontoffice123 |
+| Petugas Tindak Lanjut | petugas.b | tindaklanjut123 |
+| Kepala Seksi (Kasie) | kasie.bang | kasiebang123 |
+| Lurah / Sekretaris Lurah | lurah.airmadidi | lurah2026 |
+| Administrator Sistem | admin.sip | admin2026 |
 
 Masyarakat umum (pengadu) tidak memerlukan akun.
 
@@ -241,8 +240,12 @@ Ringkasan: **6 kasus uji, 4 lulus** (TC-05 dan TC-06 baru berstatus *Designed* p
 | TC-02 | UC-01 | Login dengan password salah | Tampil pesan "Kredensial Tidak Valid" | Lulus |
 | TC-03 | UC-02 | Ajukan aduan lengkap (data valid + foto < 10 MB) | Terbit nomor tiket unik ADU-xxxx | Lulus |
 | TC-04 | UC-03 | Lacak tiket dengan nomor tiket valid | Tampilkan linimasa progres | Lulus |
-| TC-05 | UC-06 | [PERLU DIISI MANUAL: skenario verifikasi pengaduan] | [PERLU DIISI MANUAL: hasil diharapkan] | Designed (belum diuji) |
-| TC-06 | UC-08 | [PERLU DIISI MANUAL: skenario disposisi pengaduan] | [PERLU DIISI MANUAL: hasil diharapkan] | Designed (belum diuji) |
+| TC-05 | UC-04| notifikasi otomatis (WhatsApp/SMS/sistem) | pengadu bisa menerima notifikasi dari petugas| Lulus |
+| TC-06 | UC-05 | Ulasan kepuasan | Pengadu mengisi ulasan setelah pengaduannya ditangani| Lulus) |
+| TC-07 | UC-06 |  Verifikasi pengaduan | Petugas Memverifikasi Pengaduan | Lulus
+| TC-08 | UC-09-12 | Penanganan lapangan: terima disposisi, perbarui status, unggah bukti, tanggapan Resmi | Petugas dapat memperbarui pengaduan,dan mengunggah bukti pengaduan yang sudah selesai,dan tanggapan resmi dari petugas | Lulus
+| TC-09 | UC-13-15 | Pemantauan SLA, eskalasi, dan persetujuan penutupan aduan | Petugas bisa mengirim notifikasi lewat WhatsApp dan mengunggah foto di portal pengaduan | Lulus |
+| TC-10 | UC-16-18 |  Rekapitulasi data, dasbor statistik, dan ekspor laporan kinerja (PDF/Excel) | Lurah bisa melihat laporan dan bisa mendownload laporan tersebut | Lulus | 
 
 ## Keterbatasan dan Pengembangan Berikutnya
 
@@ -251,8 +254,6 @@ Ringkasan: **6 kasus uji, 4 lulus** (TC-05 dan TC-06 baru berstatus *Designed* p
 - Ekspor laporan pada tampilan yang dibangun berupa PDF dan CSV, sedangkan kebutuhan FR-18 menyebut PDF dan Excel (.xlsx).
 - Di luar ruang lingkup: sengketa hukum/pidana berat, transaksi pembayaran, peta GIS interaktif skala besar, dan modul absensi kepegawaian.
 - Batasan operasional: lampiran maksimal 10 MB per file dengan format PDF, JPG, atau PNG; kantor kelurahan hanya memiliki 2 unit komputer dan koneksi Wi-Fi belum stabil pada jam sibuk.
-- Pengujian baru mencakup TC-01 s.d. TC-04 (login, pengajuan, pelacakan); TC-05 dan TC-06 masih berstatus Designed.
-- Bug yang diketahui: [PERLU DIISI MANUAL: daftar bug yang belum diperbaiki, jika ada]
 - Rencana pengembangan: deploy ke cloud (Vercel/Netlify untuk frontend, Railway/Render untuk backend), integrasi gateway WhatsApp/SMS, penyusunan SOP, pelatihan singkat dan buku panduan per peran bagi petugas, prosedur memasukkan data pengaduan lama yang relevan, serta rencana pemeliharaan bersama pihak kelurahan.
 
 ## Penggunaan AI dan Referensi
@@ -261,8 +262,8 @@ Ringkasan: **6 kasus uji, 4 lulus** (TC-05 dan TC-06 baru berstatus *Designed* p
 |---------|---------------|------------------------------------------|
 | Gemini AI | Memindahkan, memetakan (mapping), dan menyesuaikan format data dari draf laporan ke template SRS resmi dosen pengampu (semua bagian tabel di SRS) | Mengoreksi ketidaksesuaian struktur bagian, melengkapi nomor urut bagian yang hilang, dan memastikan isi tabel sesuai SRS resmi dari dosen pengampu |
 | Gemini AI | Menyusun draf rinci Use Case Description berdasarkan Use Case Diagram dan draf awal (Bagian 6.3, UC-01 s.d. UC-22) | Memeriksa kebenaran alur utama dan alternatif, kesesuaian aktor, serta konsistensi relasi include/extend dengan diagram UML |
-| [PERLU DIISI MANUAL: nama alat AI generatif untuk prototipe] | Merancang tata letak antarmuka, alur visual, dan panduan desain prototipe (SRS 10.1) | [PERLU DIISI MANUAL: bagian yang diperiksa atau diubah] |
-|Antigravity] | [Memperbaiki Code yang Error dan yang masih kurang lengkap] | [] |
+| Figma | Merancang tata letak antarmuka, alur visual, dan panduan desain prototipe (SRS 10.1) | Membuat tampilan UI/UX |
+|Antigravity] | [Memperbaiki Code yang Error dan yang masih kurang lengkap] | Melengkapi kekurangan yang ada sehingga membuat code tersebut menjadi lebih bagus |
 
 Referensi:
 
