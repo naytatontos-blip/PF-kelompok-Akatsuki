@@ -20,7 +20,7 @@ Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masya
 | 1 | Satia, Elswit Dea Narwastu | 105012410059 | Project Leader & System Analyst | Memimpin alur proyek, komunikasi stakeholder, Use Case Description (UC-01 s.d. UC-22), Activity Diagram |
 | 2 | Tatontos, Naydeline | 105022410009 | System Analyst, Data Modeler & Developer | Use Case Diagram, Data Model (skema basis data), Merancang dan Menguji Sistem SIP-Publik, dan README |
 | 3 | Palari, Sesilia | 105012410098 | System Analyst / Architect | Class Diagram (kelas, atribut, relasi antar-objek) |
-| 4 | Sahay, Priskilla Anatasya | 105012410103 | System Analyst / Architect | Sequence Diagram (interaksi antar-objek tiap skenario) |
+| 4 | Sahay, Priskilla Anatasya | 105012410103 | System Analyst / Architect | Sequence Diagram (interaksi antar objek tiap skenario) |
 | 5 | Umbas, Gheanina Imanuela | 105012410009 | UI/UX Designer, QA dan dokumentasi  | Alur dan desain antarmuka (prototipe L-01 s.d. L-08), Slide |
 
 ## Latar Belakang
