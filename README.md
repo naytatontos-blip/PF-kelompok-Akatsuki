@@ -7,11 +7,11 @@ Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masya
 | | |
 |---|---|
 | **Mata kuliah** | System Analysis and Design — Fakultas Ilmu Komputer, Universitas Klabat |
-| **Kelompok** | [PERLU DIISI MANUAL: nomor kelompok] — Akatsuki |
+| **Kelompok** |— Akatsuki |
 | **Objek / studi kasus** | Kelurahan Airmadidi Atas, Kecamatan Airmadidi, Kabupaten Minahasa Utara |
 | **Model SDLC** | Waterfall |
-| **Dokumen SRS** | [docs/SAD_FP_Kelompok[N]_SRS.pdf](docs/) [PERLU DIISI MANUAL: ganti [N] dengan nomor kelompok dan sesuaikan nama file] |
-| **Prototipe UI** | [https://www.figma.com/design/E3NFLZkkUn2XC62AbIDONu/Untitled?node-id=1-2&t=9fZxzmx8yvLafzG2-0](https://www.figma.com/design/E3NFLZkkUn2XC62AbIDONu/Untitled?node-id=1-2&t=9fZxzmx8yvLafzG2-0) |
+| **Dokumen SRS** | https://onedrive.live.com/:w:/g/personal/c04228a824dbbec9/IQCguS_eyvqZTp3fv_kZE4f4ART9bEAaCKqJQVQAtpn3Q7g?rtime=p8tVLNdF30g&redeem=aHR0cHM6Ly8xZHJ2Lm1zL3cvYy9jMDQyMjhhODI0ZGJiZWM5L0lRQ2d1U19leXZxWlRwM2Z2X2taRTRmNEFSVDliRUFhQ0txSlFWUUF0cG4zUTdnP2U9alF2VWky
+| **Prototipe UI** |https://www.figma.com/design/E3NFLZkkUn2XC62AbIDONu/Untitled?node-id=1-2&t=9fZxzmx8yvLafzG2-0|
 
 ## Anggota Kelompok
 
@@ -53,42 +53,50 @@ Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masya
 
 **[UC-01] Login**
 
-![UC-01](docs/screenshots/02_uc01.png)
+![UC-01](<img width="793" height="362" alt="image" src="https://github.com/user-attachments/assets/586d7883-453e-4f30-9881-d581aea2a899" />
+)
 
 **[UC-02] Ajukan Pengaduan**
 
-![UC-02](docs/screenshots/03_uc02.png)
+![UC-02](<img width="788" height="363" alt="image" src="https://github.com/user-attachments/assets/1fc2ed4f-d7ed-4ac3-bd76-111f00fe65f0" />
+)
 
 **[UC-03] Lacak Status Pengaduan**
 
-![UC-03](docs/screenshots/04_uc03.png)
+![UC-03](<img width="788" height="364" alt="image" src="https://github.com/user-attachments/assets/3a10aa96-4f39-4959-89d7-eb6b70cdaace" />
+)
 
 **[UC-06, UC-07, UC-08] Verifikasi Pengaduan, Tetapkan Kategori Awal, Disposisikan Pengaduan**
 
-![UC-06 s.d. UC-08](docs/screenshots/05_uc06.png)
+![UC-06 s.d. UC-08](<img width="790" height="363" alt="image" src="https://github.com/user-attachments/assets/08b858a8-8975-4507-ab5c-144990ef0fd9" />
+)
 
 **[UC-09 s.d. UC-12] Terima Disposisi, Perbarui Status, Unggah Bukti, Tanggapan kepada Pengadu**
 
-![UC-09 s.d. UC-12](docs/screenshots/06_uc09.png)
+![UC-09 s.d. UC-12](<img width="788" height="358" alt="image" src="https://github.com/user-attachments/assets/46967c83-0b35-4854-9acc-94ec8ac7ac97" />
+)
 
 **[UC-13, UC-14, UC-15] Pantau Progres, Eskalasi, Setujui Penutupan Pengaduan**
 
-![UC-13 s.d. UC-15](docs/screenshots/07_uc13.png)
+![UC-13 s.d. UC-15](<img width="790" height="361" alt="image" src="https://github.com/user-attachments/assets/e82fa045-837f-45f8-ad64-72653218bb2e" />
+)
 
 **[UC-16, UC-17, UC-18] Akses Data & Laporan, Dashboard Statistik, Ekspor Laporan Kinerja**
 
-![UC-16 s.d. UC-18](docs/screenshots/08_uc16.png)
+![UC-16 s.d. UC-18](<img width="786" height="364" alt="image" src="https://github.com/user-attachments/assets/cbe42271-5032-4632-aebe-19896a89972a" />
+)
 
 **[UC-19 s.d. UC-22] Kelola Akun, Kelola Kategori, Konfigurasi Sistem, Pantau Log Audit**
 
-![UC-19 s.d. UC-22](docs/screenshots/09_uc19.png)
+![UC-19 s.d. UC-22](<img width="792" height="360" alt="image" src="https://github.com/user-attachments/assets/7a1a6cdc-d924-42f1-a2e6-ffa4e3d4e449" />
+)
 
 **Validasi input**
 
-![Pesan validasi](docs/screenshots/10_validasi.png)
+![Pesan validasi](<img width="953" height="435" alt="image" src="https://github.com/user-attachments/assets/edfeea27-25f2-4fbf-925f-613c8c6f0703" />
+)
 
-[PERLU DIISI MANUAL: ambil screenshot pesan validasi, mis. login dengan kredensial salah ("Username, password, atau peran tidak valid") atau unggah file di atas 10 MB]
-
+[PERLU DIISI MANUAL: Halaman pengajuan masyarakat,memasukkan nama harus sesuai dengan yang di minta,dan no Hp/WhatsApp harus 12 digit
 ## Teknologi
 
 | Lapisan | Teknologi | Versi |
@@ -97,11 +105,11 @@ Sistem informasi berbasis web untuk Kelurahan Airmadidi Atas yang membantu masya
 | Back-end | Node.js, REST API dengan modul HTTP bawaan (native) | [PERLU DIISI MANUAL: versi Node.js] |
 | Database | NoSQL berbasis dokumen JSON (`backend/data/database.json`) di sisi server dan Web Storage (LocalStorage) di sisi klien | — |
 | Tools pemodelan | Enterprise Architect, mermaid.js, Draw.io | — |
-| Prototipe UI | Figma | — |
+| Prototipe UI | Figma | 
 
 ## Kebutuhan Sistem
 
-- Node.js dan npm [PERLU DIISI MANUAL: versi minimum Node.js yang diuji]
+- Node.js dan npm 
 - Tidak perlu server database terpisah, karena data tersimpan di berkas JSON
 - Git
 - Browser modern (Google Chrome atau Firefox versi terbaru); port 3000 (frontend) dan 5000 (backend API) harus tersedia
@@ -207,8 +215,6 @@ PF-kelompok-Akatsuki/
 └── README.md
 ```
 
-[PERLU DIISI MANUAL: pastikan folder `docs/` (SRS, diagram, screenshot) sudah ada di repository dan ganti `[N]` pada nama file SRS]
-
 ## Rancangan Sistem
 
 Ringkasan rancangan; detail lengkap ada di dokumen SRS.
@@ -216,13 +222,14 @@ Ringkasan rancangan; detail lengkap ada di dokumen SRS.
 | Artefak | Lokasi |
 |---------|--------|
 | Kebutuhan fungsional dan non-fungsional | SRS Bagian 5 |
-| Use case diagram dan description | SRS Bagian 6 · `docs/diagrams/[PERLU DIISI MANUAL: nama file use case diagram]` |
+| Use case diagram dan description | SRS Bagian 6 ·  |
 | Activity dan sequence diagram | SRS Bagian 6.4 dan 7.1 |
 | Class diagram | SRS Bagian 7.2 |
 | Model data (ERD) dan kamus data | SRS Bagian 8 |
 | Prototipe UI | [Figma](https://www.figma.com/design/E3NFLZkkUn2XC62AbIDONu/Untitled?node-id=1-2&t=9fZxzmx8yvLafzG2-0) · SRS Bagian 9 |
 
-![Class diagram](docs/diagrams/class_diagram.png)
+![Class diagram](<img width="596" height="491" alt="image" src="https://github.com/user-attachments/assets/40fdc648-157e-4d96-b2b3-a52b23ca6476" />
+)
 
 ## Pengujian
 
@@ -255,7 +262,7 @@ Ringkasan: **6 kasus uji, 4 lulus** (TC-05 dan TC-06 baru berstatus *Designed* p
 | Gemini AI | Memindahkan, memetakan (mapping), dan menyesuaikan format data dari draf laporan ke template SRS resmi dosen pengampu (semua bagian tabel di SRS) | Mengoreksi ketidaksesuaian struktur bagian, melengkapi nomor urut bagian yang hilang, dan memastikan isi tabel sesuai SRS resmi dari dosen pengampu |
 | Gemini AI | Menyusun draf rinci Use Case Description berdasarkan Use Case Diagram dan draf awal (Bagian 6.3, UC-01 s.d. UC-22) | Memeriksa kebenaran alur utama dan alternatif, kesesuaian aktor, serta konsistensi relasi include/extend dengan diagram UML |
 | [PERLU DIISI MANUAL: nama alat AI generatif untuk prototipe] | Merancang tata letak antarmuka, alur visual, dan panduan desain prototipe (SRS 10.1) | [PERLU DIISI MANUAL: bagian yang diperiksa atau diubah] |
-| [PERLU DIISI MANUAL: alat AI untuk penulisan kode, jika ada] | [PERLU DIISI MANUAL] | [PERLU DIISI MANUAL] |
+|Antigravity] | [Memperbaiki Code yang Error dan yang masih kurang lengkap] | [] |
 
 Referensi:
 
