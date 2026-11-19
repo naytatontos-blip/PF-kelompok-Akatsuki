@@ -117,19 +117,28 @@ export const WhatsAppPreviewModal = ({ isOpen, onClose, complaint, type = 'terim
                       className="w-full h-36 object-cover"
                     />
                     <div className="absolute top-2 left-2 bg-[#075e54] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">
-                      📸 Bukti Foto Lapangan (Selesai)
+                      📸 Bukti Foto Tanda Approval Penutupan
                     </div>
                   </div>
                   <div className="p-2 bg-emerald-50/70 text-[11px] text-emerald-900 flex items-center justify-between">
-                    <span className="truncate">bukti_pengerjaan_{shortId}.jpg</span>
-                    <a
-                      href={photoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-bold underline text-[#075e54] hover:text-emerald-800"
-                    >
-                      Buka Foto ↗
-                    </a>
+                    <span className="truncate max-w-[150px]">{complaint.buktiFotoName || `bukti_approval_${shortId}.jpg`}</span>
+                    <div className="flex items-center gap-1.5">
+                      <a
+                        href={photoUrl}
+                        download={`bukti_approval_${shortId}.jpg`}
+                        className="bg-[#075e54] hover:bg-[#064e46] text-white px-2 py-0.5 rounded text-[10px] font-bold transition"
+                      >
+                        📥 Unduh Foto
+                      </a>
+                      <a
+                        href={photoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-bold underline text-[#075e54] hover:text-emerald-800"
+                      >
+                        Buka ↗
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}
@@ -158,18 +167,29 @@ export const WhatsAppPreviewModal = ({ isOpen, onClose, complaint, type = 'terim
               className="flex-1 py-2.5 px-4 bg-[#25D366] hover:bg-[#20ba59] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition active:scale-98"
             >
               <span>📲</span>
-              <span>Buka Chat WhatsApp Resmi</span>
+              <span>Buka Chat di WhatsApp Pengadu</span>
             </a>
             <button
               onClick={handleCopy}
-              className="py-2.5 px-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition border border-slate-300"
+              className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs transition border border-slate-300"
               title="Salin teks pesan"
             >
               {copied ? '✓ Tersalin' : '📋 Salin'}
             </button>
+            {isResolved && photoUrl && (
+              <a
+                href={photoUrl}
+                download={`bukti_approval_${shortId}.jpg`}
+                className="py-2.5 px-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl font-bold text-xs flex items-center gap-1 border border-emerald-300 transition"
+                title="Unduh foto untuk dilampirkan di WhatsApp"
+              >
+                <span>📥</span>
+                <span>Foto</span>
+              </a>
+            )}
           </div>
           <p className="text-[10px] text-center text-slate-400">
-            Pemberitahuan terkirim ke nomor WhatsApp resmi warga ({rawPhone})
+            Pemberitahuan resmi terkirim ke WhatsApp warga ({rawPhone}) beserta bukti foto approval ditutup
           </p>
         </div>
 

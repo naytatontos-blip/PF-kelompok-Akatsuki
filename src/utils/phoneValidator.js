@@ -167,7 +167,7 @@ export const generateWhatsAppResolvedMessage = (complaint) => {
   const baseUrl = typeof window !== 'undefined' && window.location ? window.location.origin : 'http://localhost:3000';
   const isDataUrl = complaint.buktiFotoUrl && complaint.buktiFotoUrl.startsWith('data:');
   const buktiFotoUrl = isDataUrl
-    ? `[Foto Bukti Selesai Terlampir - Disahkan Kasie]\n🔗 Akses Foto: ${baseUrl}/#/track?id=${shortId}`
+    ? `[Foto Bukti Selesai Terlampir - Disahkan Kepala Seksi]\n🔗 Akses & Unduh Foto HD: ${baseUrl}/#/track?id=${shortId}&foto=1`
     : (complaint.buktiFotoUrl || 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80');
   
   return (

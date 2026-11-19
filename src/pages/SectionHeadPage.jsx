@@ -57,15 +57,38 @@ export const SectionHeadPage = () => {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const dataUrl = event.target.result;
-      setKasieUploads(prev => ({
-        ...prev,
-        [closureTicketId]: {
-          url: dataUrl,
-          name: file.name,
-          size: (file.size / 1024).toFixed(1) + ' KB'
+      const rawUrl = event.target.result;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 900;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
         }
-      }));
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+        setKasieUploads(prev => ({
+          ...prev,
+          [closureTicketId]: {
+            url: compressedDataUrl,
+            name: file.name,
+            size: (file.size / 1024).toFixed(1) + ' KB'
+          }
+        }));
+      };
+      img.src = rawUrl;
     };
     reader.readAsDataURL(file);
   };
@@ -84,7 +107,25 @@ export const SectionHeadPage = () => {
   };
 
   const handleApproveClosure = () => {
-    approveClosure(closureTicketId, activeBuktiFoto);
+    const finalPhoto = activeBuktiFoto || targetClosure?.buktiFotoUrl;
+    if (!finalPhoto) {
+      if (!confirm('Foto tanda approval di sebelah kanan belum diunggah. Tetap setujui closure tanpa foto baru?')) {
+        return;
+      }
+    }
+    approveClosure(closureTicketId, finalPhoto);
+
+    // Pastikan foto tetap tersimpan di kasieUploads agar foto TETAP ada di sebelah kanan
+    if (finalPhoto) {
+      setKasieUploads(prev => ({
+        ...prev,
+        [closureTicketId]: {
+          url: finalPhoto,
+          name: currentKasieUpload?.name || `bukti_approval_${closureTicketId}.jpg`,
+          size: currentKasieUpload?.size || 'Foto Resmi Kasie'
+        }
+      }));
+    }
   };
 
   const handleRejectClosure = () => {
@@ -347,91 +388,107 @@ export const SectionHeadPage = () => {
                     </div>
                   </div>
 
-                  {/* Foto Bukti Penanganan Petugas / Kasie */}
+                  {/* Foto Bukti Penanganan Petugas / Kasie (Sebelah Kanan) */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-emerald-800 block">2. Foto Bukti Penanganan / Tanda Selesai</span>
-                      {currentKasieUpload ? (
-                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <span>✓</span> Diunggah Kasie
-                        </span>
-                      ) : targetClosure?.buktiFotoUrl ? (
-                        <span className="text-[10px] bg-slate-100 text-slate-700 font-medium px-2 py-0.5 rounded-full">
-                          Dari Petugas Lapangan
-                        </span>
-                      ) : null}
-                    </div>
-                    <div className="rounded-xl overflow-hidden border-2 border-emerald-500/40 aspect-video bg-emerald-950/20 relative flex items-center justify-center">
+                      <span className="text-xs font-bold text-emerald-800 block">
+                        2. Foto Tanda Approval Penutupan (Sebelah Kanan)
+                      </span>
                       {activeBuktiFoto ? (
-                        <>
-                          <img src={activeBuktiFoto} alt="Bukti Selesai" className="w-full h-full object-cover" />
-                          <div className="absolute top-2 left-2 bg-[#0c4652] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow flex items-center gap-1">
-                            <span>📸</span>
-                            <span>Tanda Selesai Pengerjaan</span>
-                          </div>
-                        </>
+                        <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <span>✓</span> {currentKasieUpload ? 'Diunggah Kasie' : 'Foto Selesai Terlampir'}
+                        </span>
                       ) : (
-                        <div className="p-6 text-center text-slate-400 text-xs">
-                          Belum ada foto penyelesaian. Silakan unggah foto tanda selesai di bawah.
-                        </div>
+                        <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+                          Foto Ditambahkan di Sini
+                        </span>
                       )}
                     </div>
-                  </div>
-                </div>
 
-                {/* UPLOAD FOTO BUKTI SELESAI KASIE (UNTUK TANDA SELESAI & DIKIRIM KE WA WARGA) */}
-                <div className="p-4 bg-emerald-50/70 rounded-xl border border-emerald-200/80 space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <div className="text-xs font-bold text-[#0c4652] flex items-center gap-1.5">
-                        <span className="text-sm">📸</span>
-                        <span>Unggah Foto Tanda Selesai Dibuat (Petugas Kasie)</span>
-                        <span className="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
-                          Untuk Notifikasi WhatsApp Warga
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-600 mt-0.5">
-                        Unggah foto sebagai tanda fisik bahwa perbaikan telah selesai dibuat. Foto ini otomatis dipakai dan dilampirkan dalam notifikasi WhatsApp pengadu ({targetClosure?.nama} - +62 {targetClosure?.kontak}).
-                      </p>
+                    {/* Area Foto di Sebelah Kanan */}
+                    <div className="rounded-xl overflow-hidden border-2 border-dashed border-emerald-500/50 aspect-video bg-emerald-950/10 relative flex flex-col items-center justify-center shadow-xs">
+                      {activeBuktiFoto ? (
+                        <div className="relative w-full h-full">
+                          <img
+                            src={activeBuktiFoto}
+                            alt="Foto Tanda Approval Selesai"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute top-2 left-2 bg-[#0c4652] text-white text-[10px] font-bold px-2 py-0.5 rounded shadow flex items-center gap-1">
+                            <span>📸</span>
+                            <span>Tanda Approval Ditutup</span>
+                          </div>
+                          <div className="absolute bottom-2 right-2 flex items-center gap-1.5 bg-black/50 backdrop-blur-xs p-1 rounded-lg">
+                            <label className="cursor-pointer bg-white hover:bg-slate-100 text-slate-800 text-[11px] font-bold px-2.5 py-1 rounded shadow-sm flex items-center gap-1 transition">
+                              <span>📷</span>
+                              <span>Ganti Foto</span>
+                              <input
+                                type="file"
+                                accept="image/png, image/jpeg, image/jpg"
+                                onChange={handleKasiePhotoChange}
+                                className="hidden"
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={handleRemoveKasiePhoto}
+                              className="bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold px-2.5 py-1 rounded shadow-sm flex items-center gap-1 transition"
+                            >
+                              <span>✕</span>
+                              <span>Hapus</span>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className="cursor-pointer flex flex-col items-center justify-center gap-2 w-full h-full p-4 hover:bg-emerald-50/60 rounded-xl transition">
+                          <div className="w-12 h-12 rounded-full bg-emerald-100 text-[#0c4652] flex items-center justify-center text-2xl shadow-sm">
+                            📸
+                          </div>
+                          <div className="text-center">
+                            <span className="text-xs font-bold text-[#0c4652] block">
+                              + Klik untuk Mengunggah Foto di Sini
+                            </span>
+                            <span className="text-[11px] text-slate-500 block mt-0.5">
+                              Foto tanda approval ditutup akan ditambahkan di sebelah kanan
+                            </span>
+                            <span className="text-[10px] text-emerald-700 font-semibold block mt-1">
+                              Foto ini yang otomatis dikirim ke WhatsApp pengadu
+                            </span>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/png, image/jpeg, image/jpg"
+                            onChange={handleKasiePhotoChange}
+                            className="hidden"
+                          />
+                        </label>
+                      )}
                     </div>
 
-                    {currentKasieUpload && (
-                      <button
-                        type="button"
-                        onClick={handleRemoveKasiePhoto}
-                        className="text-xs text-rose-600 hover:text-rose-800 font-semibold underline self-start sm:self-auto"
-                      >
-                        ✕ Batalkan / Hapus Foto
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                    <label className="cursor-pointer py-2.5 px-4 bg-[#0c4652] hover:bg-[#083842] text-white text-xs font-semibold rounded-lg flex items-center justify-center gap-2 shadow-sm transition shrink-0">
-                      <span>📁</span>
-                      <span>{activeBuktiFoto ? 'Ganti Foto Selesai' : 'Pilih / Ambil Foto Selesai'}</span>
-                      <input
-                        type="file"
-                        accept="image/png, image/jpeg, image/jpg"
-                        onChange={handleKasiePhotoChange}
-                        className="hidden"
-                      />
-                    </label>
-
-                    {activeBuktiFoto ? (
-                      <div className="flex-1 flex items-center gap-2 text-xs text-emerald-800 bg-white px-3 py-2 rounded-lg border border-emerald-200 shadow-2xs">
-                        <span className="text-base text-emerald-600">✅</span>
+                    {/* Keterangan Status Foto Sebelah Kanan & WhatsApp */}
+                    <div className="p-2.5 bg-emerald-50/80 rounded-xl border border-emerald-200 text-xs flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="text-base text-emerald-600">📲</span>
                         <div className="truncate">
-                          <span className="font-bold">{currentKasieUpload?.name || 'foto_bukti_selesai_resmi.jpg'}</span>
-                          {currentKasieUpload?.size && <span className="text-slate-400 ml-1.5 font-mono">({currentKasieUpload.size})</span>}
-                          <span className="text-[11px] text-slate-500 block">Foto siap dilampirkan ke laporan penutupan tiket dan dikirim ke WhatsApp warga.</span>
+                          <span className="font-bold text-slate-800 block text-[11px]">
+                            {activeBuktiFoto ? 'Foto siap dikirim ke WhatsApp Pengadu' : 'Belum ada foto yang diunggah'}
+                          </span>
+                          <span className="text-[10px] text-slate-500 truncate block">
+                            Penerima: {targetClosure?.nama} (+62 {targetClosure?.kontak})
+                          </span>
                         </div>
                       </div>
-                    ) : (
-                      <div className="flex-1 text-xs text-amber-800 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
-                        ⚠️ Belum ada foto tanda selesai. Silakan unggah foto tanda selesai pengerjaan sebelum menyetujui closure.
-                      </div>
-                    )}
+                      <label className="shrink-0 cursor-pointer px-2.5 py-1.5 bg-[#0c4652] hover:bg-[#083842] text-white rounded-lg font-bold text-[11px] flex items-center gap-1 shadow-xs transition">
+                        <span>📁</span>
+                        <span>{activeBuktiFoto ? 'Ganti' : 'Pilih Foto'}</span>
+                        <input
+                          type="file"
+                          accept="image/png, image/jpeg, image/jpg"
+                          onChange={handleKasiePhotoChange}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
 
